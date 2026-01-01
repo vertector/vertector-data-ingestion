@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# uv
+.uv/
+uv.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# Cache
+.cache/
+*.pkl
+*.pickle
+
+# Model weights (but not src code)
+/models/
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation builds
+docs/_build/
+
+# Test outputs
+test_outputs/
+test_fixtures/output/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
