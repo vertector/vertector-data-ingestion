@@ -1,7 +1,5 @@
 """EasyOCR plugin implementation."""
 
-from typing import List
-
 import numpy as np
 from loguru import logger
 
@@ -16,7 +14,7 @@ class EasyOcrPlugin(OcrPlugin):
         self.reader = None
         self.initialized = False
 
-    def initialize(self, languages: List[str], use_gpu: bool) -> None:
+    def initialize(self, languages: list[str], use_gpu: bool) -> None:
         """
         Initialize EasyOCR engine.
 
@@ -42,9 +40,7 @@ class EasyOcrPlugin(OcrPlugin):
             logger.error(f"Failed to initialize EasyOCR: {e}")
             raise
 
-    def extract_text(
-        self, image: np.ndarray, confidence_threshold: float = 0.5
-    ) -> List[OcrResult]:
+    def extract_text(self, image: np.ndarray, confidence_threshold: float = 0.5) -> list[OcrResult]:
         """
         Extract text from image using EasyOCR.
 
@@ -77,9 +73,7 @@ class EasyOcrPlugin(OcrPlugin):
                         max(y_coords),
                     )
 
-                    ocr_results.append(
-                        OcrResult(text=text, confidence=confidence, bbox=bbox_tuple)
-                    )
+                    ocr_results.append(OcrResult(text=text, confidence=confidence, bbox=bbox_tuple))
 
             return ocr_results
 

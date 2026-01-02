@@ -1,10 +1,10 @@
 """Factory for creating exporters."""
 
-from vertector_data_ingestion.models.config import ExportFormat
 from vertector_data_ingestion.exporters.base import BaseExporter
-from vertector_data_ingestion.exporters.markdown_exporter import MarkdownExporter
-from vertector_data_ingestion.exporters.json_exporter import JsonExporter
 from vertector_data_ingestion.exporters.doctags_exporter import DocTagsExporter
+from vertector_data_ingestion.exporters.json_exporter import JsonExporter
+from vertector_data_ingestion.exporters.markdown_exporter import MarkdownExporter
+from vertector_data_ingestion.models.config import ExportFormat
 
 
 class ExporterFactory:

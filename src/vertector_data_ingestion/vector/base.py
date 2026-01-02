@@ -1,7 +1,7 @@
 """Base vector store interface."""
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from vertector_data_ingestion.models.chunk import DocumentChunk
 
@@ -10,7 +10,7 @@ class VectorStoreAdapter(ABC):
     """Abstract base class for vector store adapters."""
 
     @abstractmethod
-    def add_chunks(self, chunks: List[DocumentChunk]) -> None:
+    def add_chunks(self, chunks: list[DocumentChunk]) -> None:
         """
         Add document chunks to vector store.
 
@@ -21,8 +21,8 @@ class VectorStoreAdapter(ABC):
 
     @abstractmethod
     def search(
-        self, query: str, top_k: int = 5, filters: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+        self, query: str, top_k: int = 5, filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Search for similar chunks.
 
@@ -47,7 +47,7 @@ class VectorStoreAdapter(ABC):
         pass
 
     @abstractmethod
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get vector store statistics.
 

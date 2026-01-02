@@ -3,35 +3,34 @@
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
 
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import ConvertPipelineOptions
 from docling.document_converter import (
     DocumentConverter,
-    PdfFormatOption,
-    WordFormatOption,
-    PowerpointFormatOption,
     ExcelFormatOption,
     HTMLFormatOption,
     ImageFormatOption,
+    PdfFormatOption,
+    PowerpointFormatOption,
+    WordFormatOption,
 )
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import ConvertPipelineOptions
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from vertector_data_ingestion.core.hardware_detector import HardwareDetector
+from vertector_data_ingestion.core.pipeline_router import PipelineRouter
 from vertector_data_ingestion.models.config import ConverterConfig, ExportFormat, PipelineType
 from vertector_data_ingestion.models.document import (
     DoclingDocumentWrapper,
     DocumentMetadata,
 )
-from vertector_data_ingestion.core.pipeline_router import PipelineRouter
-from vertector_data_ingestion.core.hardware_detector import HardwareDetector
 
 
 class UniversalConverter:
     """Universal document converter with intelligent pipeline routing."""
 
-    def __init__(self, config: Optional[ConverterConfig] = None):
+    def __init__(self, config: ConverterConfig | None = None):
         """
         Initialize universal converter.
 
@@ -74,7 +73,7 @@ class UniversalConverter:
         # This is just a placeholder for explicit model management if needed
         logger.debug(f"Models will be cached to: {self.config.model_cache_dir}")
 
-    def _build_format_options(self, pipeline_type: Optional[PipelineType] = None):
+    def _build_format_options(self, pipeline_type: PipelineType | None = None):
         """
         Build format-specific options for all supported document types.
 
@@ -85,13 +84,11 @@ class UniversalConverter:
             Dictionary of format options for DocumentConverter
         """
         # Build PDF pipeline options (Classic or VLM)
-        pdf_pipeline_options = self.router.build_pipeline_options(
-            Path("dummy.pdf"), pipeline_type
-        )
+        pdf_pipeline_options = self.router.build_pipeline_options(Path("dummy.pdf"), pipeline_type)
 
         # Import VlmPipeline for VLM mode
-        from docling.pipeline.vlm_pipeline import VlmPipeline
         from docling.datamodel.pipeline_options import VlmPipelineOptions
+        from docling.pipeline.vlm_pipeline import VlmPipeline
 
         # Determine if we're using VLM pipeline
         is_vlm_pipeline = isinstance(pdf_pipeline_options, VlmPipelineOptions)
@@ -103,6 +100,7 @@ class UniversalConverter:
         # MPS doesn't support BFloat16, which is required by VLM models
         # Only enable picture descriptions on CUDA or CPU
         from vertector_data_ingestion.core.hardware_detector import HardwareType
+
         supports_vlm = self.hardware_config.device_type in [HardwareType.CUDA, HardwareType.CPU]
 
         if self.config.vlm.enable_picture_description and supports_vlm:
@@ -120,8 +118,7 @@ class UniversalConverter:
         if is_vlm_pipeline:
             format_options = {
                 InputFormat.PDF: PdfFormatOption(
-                    pipeline_cls=VlmPipeline,
-                    pipeline_options=pdf_pipeline_options
+                    pipeline_cls=VlmPipeline, pipeline_options=pdf_pipeline_options
                 ),
                 InputFormat.DOCX: WordFormatOption(pipeline_options=enrich_options),
                 InputFormat.PPTX: PowerpointFormatOption(pipeline_options=enrich_options),
@@ -147,7 +144,7 @@ class UniversalConverter:
         reraise=True,
     )
     def _convert_with_retry(
-        self, source: Path, pipeline_type: Optional[PipelineType] = None
+        self, source: Path, pipeline_type: PipelineType | None = None
     ) -> DoclingDocumentWrapper:
         """
         Convert document with automatic retry on transient failures.
@@ -172,9 +169,7 @@ class UniversalConverter:
         format_options = self._build_format_options(pipeline_type)
 
         # Create converter with format-specific options
-        converter = DocumentConverter(
-            format_options=format_options
-        )
+        converter = DocumentConverter(format_options=format_options)
 
         # Convert document
         logger.info(f"Converting {source.name} with {pipeline_type.value} pipeline")
@@ -198,17 +193,17 @@ class UniversalConverter:
 
         logger.info(
             f"Converted {source.name} in {metadata.processing_time:.2f}s "
-            f"({num_pages} pages, {num_pages/metadata.processing_time:.1f} pages/sec)"
+            f"({num_pages} pages, {num_pages / metadata.processing_time:.1f} pages/sec)"
         )
 
         return DoclingDocumentWrapper(doc=doc, metadata=metadata)
 
     def convert(
         self,
-        source: Union[Path, List[Path]],
-        use_vlm: Optional[bool] = None,
+        source: Path | list[Path],
+        use_vlm: bool | None = None,
         parallel: bool = True,
-    ) -> Union[DoclingDocumentWrapper, List[DoclingDocumentWrapper]]:
+    ) -> DoclingDocumentWrapper | list[DoclingDocumentWrapper]:
         """
         Convert single document or batch of documents.
 
@@ -248,7 +243,7 @@ class UniversalConverter:
             results = self.convert_batch(
                 [Path(s) if isinstance(s, str) else s for s in source],
                 parallel=parallel,
-                fail_fast=self.config.fail_fast
+                fail_fast=self.config.fail_fast,
             )
             # Extract successful conversions
             successful_docs = [doc for _, doc, err in results if doc is not None]
@@ -257,19 +252,14 @@ class UniversalConverter:
             failed_count = len(results) - len(successful_docs)
             if failed_count > 0:
                 logger.warning(
-                    f"Batch conversion: {len(successful_docs)} successful, "
-                    f"{failed_count} failed"
+                    f"Batch conversion: {len(successful_docs)} successful, {failed_count} failed"
                 )
 
             return successful_docs
         else:
-            raise TypeError(
-                f"source must be Path or List[Path], got {type(source).__name__}"
-            )
+            raise TypeError(f"source must be Path or List[Path], got {type(source).__name__}")
 
-    def convert_single(
-        self, source: Path, use_vlm: Optional[bool] = None
-    ) -> DoclingDocumentWrapper:
+    def convert_single(self, source: Path, use_vlm: bool | None = None) -> DoclingDocumentWrapper:
         """
         Convert a single document.
 
@@ -306,10 +296,10 @@ class UniversalConverter:
 
     def convert_batch(
         self,
-        sources: List[Path],
+        sources: list[Path],
         parallel: bool = True,
         fail_fast: bool = None,
-    ) -> List[Tuple[Path, Optional[DoclingDocumentWrapper], Optional[Exception]]]:
+    ) -> list[tuple[Path, DoclingDocumentWrapper | None, Exception | None]]:
         """
         Convert multiple documents.
 
@@ -330,13 +320,10 @@ class UniversalConverter:
             # Parallel processing
             logger.info(f"Converting {len(sources)} documents in parallel")
 
-            with ThreadPoolExecutor(
-                max_workers=self.config.batch_processing_workers
-            ) as executor:
+            with ThreadPoolExecutor(max_workers=self.config.batch_processing_workers) as executor:
                 # Submit all tasks
                 future_to_source = {
-                    executor.submit(self.convert_single, source): source
-                    for source in sources
+                    executor.submit(self.convert_single, source): source for source in sources
                 }
 
                 # Collect results
@@ -370,15 +357,11 @@ class UniversalConverter:
         # Log summary
         successful = sum(1 for _, doc, _ in results if doc is not None)
         failed = len(results) - successful
-        logger.info(
-            f"Batch conversion complete: {successful} successful, {failed} failed"
-        )
+        logger.info(f"Batch conversion complete: {successful} successful, {failed} failed")
 
         return results
 
-    def export(
-        self, doc_wrapper: DoclingDocumentWrapper, format: ExportFormat
-    ) -> str:
+    def export(self, doc_wrapper: DoclingDocumentWrapper, format: ExportFormat) -> str:
         """
         Export document to specified format.
 
@@ -403,9 +386,9 @@ class UniversalConverter:
     def convert_and_export(
         self,
         source: Path,
-        output_name: Optional[str] = None,
+        output_name: str | None = None,
         format: ExportFormat = ExportFormat.MARKDOWN,
-        use_vlm: Optional[bool] = None,
+        use_vlm: bool | None = None,
     ) -> Path:
         """
         Convert document and export to file.

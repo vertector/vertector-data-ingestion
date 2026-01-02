@@ -1,7 +1,7 @@
 """JSON exporter for lossless document representation."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
 from vertector_data_ingestion.exporters.base import BaseExporter
 
@@ -36,7 +36,7 @@ class JsonExporter(BaseExporter):
         # Serialize to JSON
         return json.dumps(doc_dict, indent=self.indent, ensure_ascii=False)
 
-    def export_to_dict(self, document: Any) -> Dict[str, Any]:
+    def export_to_dict(self, document: Any) -> dict[str, Any]:
         """
         Export document to dictionary.
 

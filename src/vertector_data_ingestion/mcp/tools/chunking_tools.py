@@ -1,13 +1,11 @@
 """Chunking tools for MCP server."""
 
-import json
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
 import asyncio
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 from vertector_data_ingestion import HybridChunker
-from vertector_data_ingestion.models.chunk import DocumentChunk
-from vertector_data_ingestion.models.document import DoclingDocumentWrapper
 
 
 async def chunk_document(
@@ -16,9 +14,9 @@ async def chunk_document(
     tokenizer: str = "Qwen/Qwen3-Embedding-0.6B",
     include_metadata: bool = True,
     hardware: str = "auto",
-    get_converter_fn: Optional[Callable] = None,
-    get_chunker_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    get_converter_fn: Callable | None = None,
+    get_chunker_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Create semantic chunks from a document.
 
     Args:
@@ -46,12 +44,14 @@ async def chunk_document(
             converter = get_converter_fn(hardware)
         else:
             from vertector_data_ingestion import UniversalConverter
+
             converter = UniversalConverter()
 
         if get_chunker_fn:
             chunker = get_chunker_fn(tokenizer, max_tokens)
         else:
             from vertector_data_ingestion.models.config import ChunkingConfig
+
             config = ChunkingConfig(
                 tokenizer=tokenizer,
                 max_tokens=max_tokens,
@@ -104,7 +104,7 @@ async def chunk_document(
 
         # Calculate statistics
         chunk_sizes = [len(chunk.text) for chunk in chunking_result.chunks]
-        token_counts = [chunk.chunk_index for chunk in chunking_result.chunks]
+        [chunk.chunk_index for chunk in chunking_result.chunks]
 
         return {
             "success": True,
@@ -135,9 +135,9 @@ async def chunk_text(
     text: str,
     max_tokens: int = 512,
     tokenizer: str = "Qwen/Qwen3-Embedding-0.6B",
-    doc_id: Optional[str] = None,
-    get_chunker_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    doc_id: str | None = None,
+    get_chunker_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Chunk raw text directly.
 
     Args:
@@ -153,14 +153,15 @@ async def chunk_text(
     try:
         # Get chunker
         if get_chunker_fn:
-            chunker = get_chunker_fn(tokenizer, max_tokens)
+            get_chunker_fn(tokenizer, max_tokens)
         else:
             from vertector_data_ingestion.models.config import ChunkingConfig
+
             config = ChunkingConfig(
                 tokenizer=tokenizer,
                 max_tokens=max_tokens,
             )
-            chunker = HybridChunker(config=config)
+            HybridChunker(config=config)
 
         # Create a minimal document wrapper for chunking
         # We'll use the chunker's internal text chunking method
@@ -177,15 +178,17 @@ async def chunk_text(
         chunk_idx = 0
 
         for i in range(0, len(tokens), max_tokens):
-            chunk_tokens = tokens[i:i + max_tokens]
+            chunk_tokens = tokens[i : i + max_tokens]
             chunk_text = tokenizer_instance.decode(chunk_tokens, skip_special_tokens=True)
 
-            chunks_data.append({
-                "chunk_id": f"{doc_id or 'text'}_{chunk_idx}",
-                "text": chunk_text,
-                "chunk_index": chunk_idx,
-                "token_count": len(chunk_tokens),
-            })
+            chunks_data.append(
+                {
+                    "chunk_id": f"{doc_id or 'text'}_{chunk_idx}",
+                    "text": chunk_text,
+                    "chunk_index": chunk_idx,
+                    "token_count": len(chunk_tokens),
+                }
+            )
 
             chunk_idx += 1
 
@@ -225,9 +228,9 @@ async def analyze_chunk_distribution(
     max_tokens: int = 512,
     tokenizer: str = "Qwen/Qwen3-Embedding-0.6B",
     hardware: str = "auto",
-    get_converter_fn: Optional[Callable] = None,
-    get_chunker_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    get_converter_fn: Callable | None = None,
+    get_chunker_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Analyze chunk size distribution for a document.
 
     Args:
@@ -254,12 +257,14 @@ async def analyze_chunk_distribution(
             converter = get_converter_fn(hardware)
         else:
             from vertector_data_ingestion import UniversalConverter
+
             converter = UniversalConverter()
 
         if get_chunker_fn:
             chunker = get_chunker_fn(tokenizer, max_tokens)
         else:
             from vertector_data_ingestion.models.config import ChunkingConfig
+
             config = ChunkingConfig(
                 tokenizer=tokenizer,
                 max_tokens=max_tokens,
@@ -291,7 +296,7 @@ async def analyze_chunk_distribution(
                 return 0
             k = (len(data) - 1) * p / 100
             f = int(k)
-            c = f + 1 if c < len(data) else f
+            c = f + 1 if f + 1 < len(data) else f
             if f == c:
                 return data[f]
             return data[f] * (c - k) + data[c] * (k - f)
@@ -315,7 +320,10 @@ async def analyze_chunk_distribution(
                     {"range": "0-100", "count": sum(1 for s in chunk_sizes if s <= 100)},
                     {"range": "101-500", "count": sum(1 for s in chunk_sizes if 100 < s <= 500)},
                     {"range": "501-1000", "count": sum(1 for s in chunk_sizes if 500 < s <= 1000)},
-                    {"range": "1001-2000", "count": sum(1 for s in chunk_sizes if 1000 < s <= 2000)},
+                    {
+                        "range": "1001-2000",
+                        "count": sum(1 for s in chunk_sizes if 1000 < s <= 2000),
+                    },
                     {"range": "2001+", "count": sum(1 for s in chunk_sizes if s > 2000)},
                 ],
             },

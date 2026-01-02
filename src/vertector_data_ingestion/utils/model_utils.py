@@ -1,7 +1,5 @@
 """Utility functions for model detection and configuration."""
 
-from typing import Optional
-
 from loguru import logger
 
 
@@ -29,9 +27,9 @@ def requires_left_padding(model_name: str) -> bool:
 
     # Models that require left padding
     left_padding_indicators = [
-        "qwen3",          # Qwen3 family only
-        "nemotron",       # NVIDIA Nemotron family
-        "llama-embed",    # NVIDIA LLaMA embedding models
+        "qwen3",  # Qwen3 family only
+        "nemotron",  # NVIDIA Nemotron family
+        "llama-embed",  # NVIDIA LLaMA embedding models
     ]
 
     return any(indicator in model_name_lower for indicator in left_padding_indicators)
@@ -58,7 +56,7 @@ def get_padding_side(model_name: str) -> str:
     return "left" if requires_left_padding(model_name) else "right"
 
 
-def get_embedding_dimension(model_name: str) -> Optional[int]:
+def get_embedding_dimension(model_name: str) -> int | None:
     """
     Extract embedding dimension from a model.
 
@@ -85,13 +83,10 @@ def get_embedding_dimension(model_name: str) -> Optional[int]:
         "qwen/qwen3-embedding-0.6b": 1024,
         "qwen/qwen3-embedding-4b": 2560,
         "qwen/qwen3-embedding-8b": 4096,
-
         # Nemotron models
         "nvidia/llama-embed-nemotron-8b": 4096,
-
         # Multilingual E5
         "intfloat/multilingual-e5-large-instruct": 1024,
-
         # SentenceTransformers models
         "sentence-transformers/all-minilm-l6-v2": 384,
         "sentence-transformers/all-mpnet-base-v2": 768,

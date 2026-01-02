@@ -1,16 +1,14 @@
 """Document processing tools for MCP server."""
 
-import json
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 from vertector_data_ingestion import (
-    UniversalConverter,
     ExportFormat,
+    UniversalConverter,
 )
-from vertector_data_ingestion.models.document import DoclingDocumentWrapper
 
 
 async def convert_document(
@@ -18,8 +16,8 @@ async def convert_document(
     output_format: str = "markdown",
     pipeline: str = "auto",
     hardware: str = "auto",
-    get_converter_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    get_converter_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Convert a document to structured format.
 
     Args:
@@ -41,10 +39,7 @@ async def convert_document(
             }
 
         # Get converter
-        if get_converter_fn:
-            converter = get_converter_fn(hardware)
-        else:
-            converter = UniversalConverter()
+        converter = get_converter_fn(hardware) if get_converter_fn else UniversalConverter()
 
         # Convert document
         loop = asyncio.get_event_loop()
@@ -95,13 +90,13 @@ async def convert_document(
 
 
 async def batch_convert_documents(
-    file_paths: List[str],
+    file_paths: list[str],
     output_format: str = "markdown",
     pipeline: str = "auto",
     hardware: str = "auto",
     max_workers: int = 4,
-    get_converter_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    get_converter_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Convert multiple documents in parallel.
 
     Args:
@@ -151,7 +146,7 @@ async def batch_convert_documents(
 
 async def extract_metadata(
     file_path: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Extract metadata from a document without full conversion.
 
     Args:
@@ -200,8 +195,8 @@ async def extract_tables(
     file_path: str,
     output_format: str = "json",
     hardware: str = "auto",
-    get_converter_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    get_converter_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Extract tables from a document.
 
     Args:
@@ -222,10 +217,7 @@ async def extract_tables(
             }
 
         # Get converter
-        if get_converter_fn:
-            converter = get_converter_fn(hardware)
-        else:
-            converter = UniversalConverter()
+        converter = get_converter_fn(hardware) if get_converter_fn else UniversalConverter()
 
         # Convert document
         loop = asyncio.get_event_loop()
@@ -244,7 +236,7 @@ async def extract_tables(
 
         # Iterate through document items to find tables
         for item in docling_doc.body.items:
-            if hasattr(item, 'self_ref') and 'table' in str(item.self_ref).lower():
+            if hasattr(item, "self_ref") and "table" in str(item.self_ref).lower():
                 # This is a table reference
                 table_data = {
                     "type": "table",
@@ -273,8 +265,8 @@ async def extract_images(
     output_dir: str,
     generate_captions: bool = False,
     hardware: str = "auto",
-    get_converter_fn: Optional[Callable] = None,
-) -> Dict[str, Any]:
+    get_converter_fn: Callable | None = None,
+) -> dict[str, Any]:
     """Extract images from a document.
 
     Args:
@@ -299,10 +291,7 @@ async def extract_images(
         output_path.mkdir(parents=True, exist_ok=True)
 
         # Get converter
-        if get_converter_fn:
-            converter = get_converter_fn(hardware)
-        else:
-            converter = UniversalConverter()
+        converter = get_converter_fn(hardware) if get_converter_fn else UniversalConverter()
 
         # Convert document
         loop = asyncio.get_event_loop()
@@ -320,16 +309,18 @@ async def extract_images(
         docling_doc = doc.document
 
         # Get pictures from document
-        if hasattr(docling_doc, 'pictures') and docling_doc.pictures:
-            for idx, picture in enumerate(docling_doc.pictures):
+        if hasattr(docling_doc, "pictures") and docling_doc.pictures:
+            for idx, _picture in enumerate(docling_doc.pictures):
                 image_path = output_path / f"image_{idx}.png"
                 # Save picture data
                 # This requires accessing the actual image data from Docling
-                images.append({
-                    "index": idx,
-                    "path": str(image_path),
-                    "caption": None,  # Would be generated if generate_captions=True
-                })
+                images.append(
+                    {
+                        "index": idx,
+                        "path": str(image_path),
+                        "caption": None,  # Would be generated if generate_captions=True
+                    }
+                )
 
         return {
             "success": True,

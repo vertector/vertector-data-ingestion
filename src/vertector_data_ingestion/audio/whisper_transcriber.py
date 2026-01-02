@@ -2,7 +2,7 @@
 
 import time
 from pathlib import Path
-from typing import Optional
+
 from loguru import logger
 
 from vertector_data_ingestion.audio.base import (
@@ -11,7 +11,7 @@ from vertector_data_ingestion.audio.base import (
     TranscriptionSegment,
 )
 from vertector_data_ingestion.core.hardware_detector import HardwareDetector, HardwareType
-from vertector_data_ingestion.models.config import AudioConfig, AudioBackend
+from vertector_data_ingestion.models.config import AudioBackend, AudioConfig
 
 
 class WhisperTranscriber(AudioTranscriber):
@@ -19,10 +19,10 @@ class WhisperTranscriber(AudioTranscriber):
 
     def __init__(
         self,
-        config: Optional[AudioConfig] = None,
-        model_name: Optional[str] = None,
-        use_mlx: Optional[bool] = None,
-        device: Optional[str] = None,
+        config: AudioConfig | None = None,
+        model_name: str | None = None,
+        use_mlx: bool | None = None,
+        device: str | None = None,
     ):
         """
         Initialize Whisper transcriber.
@@ -39,6 +39,7 @@ class WhisperTranscriber(AudioTranscriber):
             if model_name is not None:
                 # Handle both string and enum
                 from vertector_data_ingestion.models.config import WhisperModelSize
+
                 if isinstance(model_name, str):
                     config.model_size = WhisperModelSize(model_name)
                 else:
@@ -92,6 +93,7 @@ class WhisperTranscriber(AudioTranscriber):
             # Use MLX Whisper for Apple Silicon
             try:
                 import mlx_whisper
+
                 self.model = mlx_whisper
                 self.backend = "mlx"
                 logger.info(f"Loaded MLX Whisper model: {self.model_name}")
@@ -99,10 +101,12 @@ class WhisperTranscriber(AudioTranscriber):
                 logger.warning(f"MLX Whisper not available: {e}, falling back to standard Whisper")
                 self.backend = "standard"
                 import whisper
+
                 self.model = whisper.load_model(self.model_name, device="cpu")
         else:
             # Use standard Whisper
             import whisper
+
             device_map = {
                 "mps": "cpu",  # Standard whisper doesn't support MPS well
                 "cuda": "cuda",
@@ -113,9 +117,7 @@ class WhisperTranscriber(AudioTranscriber):
             self.backend = "standard"
             logger.info(f"Loaded standard Whisper model on {actual_device}")
 
-    def transcribe(
-        self, audio_path: Path, language: Optional[str] = None
-    ) -> TranscriptionResult:
+    def transcribe(self, audio_path: Path, language: str | None = None) -> TranscriptionResult:
         """
         Transcribe audio file using Whisper.
 
@@ -201,9 +203,11 @@ class WhisperTranscriber(AudioTranscriber):
         try:
             if self.device == "mlx":
                 import mlx_whisper
+
                 return True
             else:
                 import whisper
+
                 return True
         except ImportError:
             return False

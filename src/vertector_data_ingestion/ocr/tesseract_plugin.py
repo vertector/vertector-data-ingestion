@@ -1,7 +1,5 @@
 """Tesseract OCR plugin implementation."""
 
-from typing import List
-
 import numpy as np
 from loguru import logger
 
@@ -16,7 +14,7 @@ class TesseractPlugin(OcrPlugin):
         self.languages = []
         self.initialized = False
 
-    def initialize(self, languages: List[str], use_gpu: bool) -> None:
+    def initialize(self, languages: list[str], use_gpu: bool) -> None:
         """
         Initialize Tesseract engine.
 
@@ -41,16 +39,14 @@ class TesseractPlugin(OcrPlugin):
         except ImportError:
             logger.error("pytesseract not installed. Install with: uv add pytesseract")
             raise
-        except Exception as e:
+        except Exception:
             logger.error(
-                f"Tesseract not found. Install tesseract-ocr: "
-                f"brew install tesseract (macOS) or apt-get install tesseract-ocr (Linux)"
+                "Tesseract not found. Install tesseract-ocr: "
+                "brew install tesseract (macOS) or apt-get install tesseract-ocr (Linux)"
             )
             raise
 
-    def extract_text(
-        self, image: np.ndarray, confidence_threshold: float = 0.5
-    ) -> List[OcrResult]:
+    def extract_text(self, image: np.ndarray, confidence_threshold: float = 0.5) -> list[OcrResult]:
         """
         Extract text from image using Tesseract.
 

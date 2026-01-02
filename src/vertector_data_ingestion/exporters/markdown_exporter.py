@@ -28,9 +28,9 @@ class MarkdownExporter(BaseExporter):
             Markdown string
         """
         # Use document's built-in export method
-        if hasattr(document, 'export_to_markdown'):
+        if hasattr(document, "export_to_markdown"):
             return document.export_to_markdown()
-        elif hasattr(document, 'to_markdown'):
+        elif hasattr(document, "to_markdown"):
             return document.to_markdown()
         else:
             # Fallback: convert to string

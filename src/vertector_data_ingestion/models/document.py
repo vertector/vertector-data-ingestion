@@ -1,10 +1,9 @@
 """Document models and wrappers for Docling integration."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from docling_core.types.doc import DoclingDocument as CoreDoclingDocument
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class BoundingBox(BaseModel):
@@ -22,13 +21,13 @@ class DocumentMetadata(BaseModel):
 
     source_path: Path
     num_pages: int
-    title: Optional[str] = None
-    author: Optional[str] = None
-    creation_date: Optional[str] = None
-    modification_date: Optional[str] = None
+    title: str | None = None
+    author: str | None = None
+    creation_date: str | None = None
+    modification_date: str | None = None
     format: str
     pipeline_type: str  # classic or vlm
-    processing_time: Optional[float] = None
+    processing_time: float | None = None
 
 
 class TableCell(BaseModel):
@@ -39,18 +38,18 @@ class TableCell(BaseModel):
     content: str
     rowspan: int = 1
     colspan: int = 1
-    bbox: Optional[BoundingBox] = None
+    bbox: BoundingBox | None = None
 
 
 class Table(BaseModel):
     """Table structure with cells and metadata."""
 
-    cells: List[TableCell]
+    cells: list[TableCell]
     num_rows: int
     num_cols: int
-    caption: Optional[str] = None
+    caption: str | None = None
     page_no: int
-    bbox: Optional[BoundingBox] = None
+    bbox: BoundingBox | None = None
 
 
 class DoclingDocumentWrapper(BaseModel):
@@ -75,7 +74,7 @@ class DoclingDocumentWrapper(BaseModel):
         # Use built-in export method from DoclingDocument
         return self.doc.export_to_markdown()
 
-    def to_json(self, lossless: bool = True) -> Dict[str, Any]:
+    def to_json(self, lossless: bool = True) -> dict[str, Any]:
         """
         Export document to JSON.
 
@@ -98,7 +97,7 @@ class DoclingDocumentWrapper(BaseModel):
         # Use built-in export method from DoclingDocument
         return self.doc.export_to_doctags()
 
-    def extract_tables(self) -> List[Table]:
+    def extract_tables(self) -> list[Table]:
         """
         Extract all tables from document.
 
@@ -163,7 +162,7 @@ class DoclingDocumentWrapper(BaseModel):
         """Get total number of pages in document."""
         return self.metadata.num_pages
 
-    def get_content_by_page(self, page_no: int) -> List[Dict[str, Any]]:
+    def get_content_by_page(self, page_no: int) -> list[dict[str, Any]]:
         """
         Get all content items for a specific page.
 

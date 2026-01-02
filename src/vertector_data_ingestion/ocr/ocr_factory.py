@@ -5,8 +5,8 @@ from loguru import logger
 from vertector_data_ingestion.models.config import OcrEngine
 from vertector_data_ingestion.ocr.base import OcrPlugin
 from vertector_data_ingestion.ocr.easyocr_plugin import EasyOcrPlugin
-from vertector_data_ingestion.ocr.tesseract_plugin import TesseractPlugin
 from vertector_data_ingestion.ocr.ocrmac_plugin import OcrMacPlugin
+from vertector_data_ingestion.ocr.tesseract_plugin import TesseractPlugin
 
 
 class OcrFactory:
@@ -92,6 +92,4 @@ class OcrFactory:
         except Exception:
             pass
 
-        raise RuntimeError(
-            "No OCR engines available. Please install easyocr or tesseract."
-        )
+        raise RuntimeError("No OCR engines available. Please install easyocr or tesseract.")

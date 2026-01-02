@@ -1,10 +1,10 @@
 """Monitoring and metrics."""
 
-from vertector_data_ingestion.monitoring.logger import setup_logging, get_logger
+from vertector_data_ingestion.monitoring.logger import get_logger, setup_logging
 from vertector_data_ingestion.monitoring.metrics import (
-    MetricsCollector,
-    ConversionMetrics,
     ChunkingMetrics,
+    ConversionMetrics,
+    MetricsCollector,
 )
 
 __all__ = [

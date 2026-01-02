@@ -1,7 +1,6 @@
 """OcrMac plugin for native macOS OCR using Vision framework."""
 
 import platform
-from typing import List
 
 import numpy as np
 from loguru import logger
@@ -18,7 +17,7 @@ class OcrMacPlugin(OcrPlugin):
         self.initialized = False
         self.is_macos = platform.system() == "Darwin"
 
-    def initialize(self, languages: List[str], use_gpu: bool) -> None:
+    def initialize(self, languages: list[str], use_gpu: bool) -> None:
         """
         Initialize OcrMac engine.
 
@@ -40,14 +39,10 @@ class OcrMacPlugin(OcrPlugin):
             logger.info("Using native macOS Vision framework for OCR")
 
         except ImportError:
-            logger.error(
-                "OcrMac not available. This feature requires Docling with macOS support."
-            )
+            logger.error("OcrMac not available. This feature requires Docling with macOS support.")
             raise
 
-    def extract_text(
-        self, image: np.ndarray, confidence_threshold: float = 0.5
-    ) -> List[OcrResult]:
+    def extract_text(self, image: np.ndarray, confidence_threshold: float = 0.5) -> list[OcrResult]:
         """
         Extract text from image using macOS Vision framework.
 

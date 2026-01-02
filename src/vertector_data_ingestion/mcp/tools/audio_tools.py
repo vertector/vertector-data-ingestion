@@ -1,15 +1,14 @@
 """Audio transcription tools for MCP server."""
 
-import json
-from pathlib import Path
-from typing import Any, Dict, List
 import asyncio
+from pathlib import Path
+from typing import Any
 
 from vertector_data_ingestion import create_audio_transcriber
 from vertector_data_ingestion.models.config import (
+    AudioBackend,
     AudioConfig,
     WhisperModelSize,
-    AudioBackend,
 )
 
 
@@ -20,7 +19,7 @@ async def transcribe_audio(
     include_timestamps: bool = True,
     output_format: str = "text",
     backend: str = "auto",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Transcribe audio file to text.
 
     Args:
@@ -130,14 +129,14 @@ async def transcribe_audio(
 
 
 async def batch_transcribe_audio(
-    file_paths: List[str],
+    file_paths: list[str],
     model_size: str = "base",
     language: str = "auto",
     include_timestamps: bool = True,
     output_format: str = "text",
     backend: str = "auto",
     max_workers: int = 2,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Transcribe multiple audio files in parallel.
 
     Args:

@@ -2,7 +2,6 @@
 
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 from loguru import logger
 
@@ -16,7 +15,7 @@ class ConversionMetrics:
     failed: int = 0
     total_pages: int = 0
     total_time_seconds: float = 0.0
-    conversion_times: List[float] = field(default_factory=list)
+    conversion_times: list[float] = field(default_factory=list)
 
     @property
     def pages_per_second(self) -> float:
@@ -39,7 +38,7 @@ class ConversionMetrics:
             return 0.0
         return (self.successful / self.total_documents) * 100
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert metrics to dictionary."""
         return {
             "total_documents": self.total_documents,
@@ -77,7 +76,7 @@ class ChunkingMetrics:
             return 0.0
         return self.total_tokens / self.total_chunks
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert metrics to dictionary."""
         return {
             "total_documents": self.total_documents,
@@ -158,7 +157,7 @@ class MetricsCollector:
             f"Recorded chunking: chunks={num_chunks}, tokens={total_tokens}, time={processing_time:.2f}s"
         )
 
-    def get_summary(self) -> Dict:
+    def get_summary(self) -> dict:
         """
         Get summary of all metrics.
 

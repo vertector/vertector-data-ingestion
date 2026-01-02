@@ -27,7 +27,7 @@ class DocTagsExporter(BaseExporter):
             DocTags string with structural markup
         """
         # Use document's built-in export method
-        if hasattr(document, 'export_to_document_tokens'):
+        if hasattr(document, "export_to_document_tokens"):
             return document.export_to_document_tokens()
         else:
             # Fallback: use JSON export

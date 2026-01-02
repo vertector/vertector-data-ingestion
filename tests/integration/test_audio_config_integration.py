@@ -5,13 +5,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from vertector_data_ingestion.models.config import (
-    LocalMpsConfig,
-    AudioConfig,
-    WhisperModelSize,
-    AudioBackend,
-)
 from vertector_data_ingestion.audio import create_audio_transcriber
+from vertector_data_ingestion.models.config import (
+    AudioBackend,
+    AudioConfig,
+    LocalMpsConfig,
+    WhisperModelSize,
+)
 
 print("=" * 80)
 print("AUDIO CONFIGURATION INTEGRATION TEST")
@@ -52,6 +52,7 @@ print()
 print("Test 3: Environment Variable Configuration")
 print("-" * 80)
 import os
+
 os.environ["VERTECTOR_AUDIO_MODEL_SIZE"] = "medium"
 os.environ["VERTECTOR_AUDIO_BACKEND"] = "auto"
 os.environ["VERTECTOR_AUDIO_LANGUAGE"] = "fr"
@@ -75,7 +76,7 @@ test_audio = Path("test_documents/harvard.wav")
 if test_audio.exists():
     config4 = LocalMpsConfig()
     transcriber = create_audio_transcriber(config4.audio)
-    print(f"✅ Transcriber created successfully")
+    print("✅ Transcriber created successfully")
     print(f"   Model: {transcriber.model_name}")
     print(f"   Device: {transcriber.device}")
     print(f"   Available: {transcriber.is_available()}")
@@ -85,7 +86,7 @@ if test_audio.exists():
     print("Transcribing audio file...")
     result = transcriber.transcribe(test_audio)
     print()
-    print(f"✅ Transcription Complete!")
+    print("✅ Transcription Complete!")
     print(f"   Processing time: {result.duration:.2f}s")
     print(f"   Language detected: {result.language}")
     print(f"   Model used: {result.model_name}")

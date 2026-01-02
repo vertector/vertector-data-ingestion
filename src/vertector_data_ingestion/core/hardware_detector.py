@@ -3,7 +3,7 @@
 import platform
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Any
+from typing import Any
 
 from loguru import logger
 
@@ -25,7 +25,7 @@ class HardwareConfig:
     batch_size: int
     use_fp16: bool
     num_workers: int
-    additional_config: Dict[str, Any]
+    additional_config: dict[str, Any]
 
 
 class HardwareDetector:
@@ -108,10 +108,7 @@ class HardwareDetector:
     @staticmethod
     def _get_cpu_config(torch=None) -> HardwareConfig:
         """Get CPU-only configuration."""
-        if torch:
-            device = torch.device("cpu")
-        else:
-            device = "cpu"
+        device = torch.device("cpu") if torch else "cpu"
 
         # Detect CPU cores
         try:
@@ -161,7 +158,7 @@ class HardwareDetector:
             return "unknown"
 
     @staticmethod
-    def get_device_info() -> Dict[str, Any]:
+    def get_device_info() -> dict[str, Any]:
         """
         Get detailed hardware information.
 

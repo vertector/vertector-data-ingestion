@@ -2,14 +2,13 @@
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger
 
 
 def setup_logging(
     log_level: str = "INFO",
-    log_file: Optional[str] = None,
+    log_file: str | None = None,
     rotation: str = "10 MB",
     retention: str = "1 week",
 ) -> None:

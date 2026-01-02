@@ -1,6 +1,6 @@
 """Utilities for enriching chunks with metadata."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from vertector_data_ingestion.models.chunk import DocumentChunk
 
@@ -9,9 +9,7 @@ class MetadataEnricher:
     """Utilities for enriching document chunks with additional metadata."""
 
     @staticmethod
-    def add_custom_metadata(
-        chunk: DocumentChunk, metadata: Dict[str, Any]
-    ) -> DocumentChunk:
+    def add_custom_metadata(chunk: DocumentChunk, metadata: dict[str, Any]) -> DocumentChunk:
         """
         Add custom metadata to chunk.
 
@@ -27,8 +25,8 @@ class MetadataEnricher:
 
     @staticmethod
     def enrich_with_keywords(
-        chunks: List[DocumentChunk], keywords: List[str]
-    ) -> List[DocumentChunk]:
+        chunks: list[DocumentChunk], keywords: list[str]
+    ) -> list[DocumentChunk]:
         """
         Add keyword matches to chunks.
 
@@ -48,8 +46,8 @@ class MetadataEnricher:
 
     @staticmethod
     def add_embeddings(
-        chunks: List[DocumentChunk], embeddings: List[List[float]]
-    ) -> List[DocumentChunk]:
+        chunks: list[DocumentChunk], embeddings: list[list[float]]
+    ) -> list[DocumentChunk]:
         """
         Add precomputed embeddings to chunks.
 
@@ -63,13 +61,13 @@ class MetadataEnricher:
         if len(chunks) != len(embeddings):
             raise ValueError("Number of chunks and embeddings must match")
 
-        for chunk, embedding in zip(chunks, embeddings):
+        for chunk, embedding in zip(chunks, embeddings, strict=False):
             chunk.metadata["embedding"] = embedding
 
         return chunks
 
     @staticmethod
-    def add_summary(chunks: List[DocumentChunk], summaries: List[str]) -> List[DocumentChunk]:
+    def add_summary(chunks: list[DocumentChunk], summaries: list[str]) -> list[DocumentChunk]:
         """
         Add summaries to chunks.
 
@@ -83,18 +81,18 @@ class MetadataEnricher:
         if len(chunks) != len(summaries):
             raise ValueError("Number of chunks and summaries must match")
 
-        for chunk, summary in zip(chunks, summaries):
+        for chunk, summary in zip(chunks, summaries, strict=False):
             chunk.metadata["summary"] = summary
 
         return chunks
 
     @staticmethod
     def filter_by_metadata(
-        chunks: List[DocumentChunk],
+        chunks: list[DocumentChunk],
         key: str,
         value: Any,
         match_exact: bool = True,
-    ) -> List[DocumentChunk]:
+    ) -> list[DocumentChunk]:
         """
         Filter chunks by metadata value.
 

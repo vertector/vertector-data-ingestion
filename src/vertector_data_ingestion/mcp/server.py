@@ -5,52 +5,46 @@ via the Model Context Protocol (MCP).
 """
 
 import asyncio
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 
 from vertector_data_ingestion import (
-    UniversalConverter,
-    LocalMpsConfig,
-    CloudGpuConfig,
     CloudCpuConfig,
+    CloudGpuConfig,
     HybridChunker,
-    ExportFormat,
-    create_audio_transcriber,
+    LocalMpsConfig,
+    UniversalConverter,
     setup_logging,
 )
-from vertector_data_ingestion.models.config import (
-    AudioConfig,
-    ChunkingConfig,
-    WhisperModelSize,
-    AudioBackend,
-)
 from vertector_data_ingestion.core.hardware_detector import HardwareDetector
+from vertector_data_ingestion.models.config import (
+    ChunkingConfig,
+)
 
-from .tools.document_tools import (
-    convert_document,
-    batch_convert_documents,
-    extract_metadata,
-    extract_tables,
-    extract_images,
+from .tools.audio_tools import (
+    batch_transcribe_audio,
+    transcribe_audio,
 )
 from .tools.chunking_tools import (
+    analyze_chunk_distribution,
     chunk_document,
     chunk_text,
-    analyze_chunk_distribution,
 )
-from .tools.audio_tools import (
-    transcribe_audio,
-    batch_transcribe_audio,
+from .tools.document_tools import (
+    batch_convert_documents,
+    convert_document,
+    extract_images,
+    extract_metadata,
+    extract_tables,
 )
 from .tools.utility_tools import (
     detect_hardware,
+    estimate_processing_time,
     list_export_formats,
     validate_file,
-    estimate_processing_time,
 )
 
 # Setup logging
@@ -60,8 +54,8 @@ setup_logging(log_level="INFO")
 app = Server("vertector-mcp")
 
 # Global state for converters (cached to avoid re-initialization)
-_converters: Dict[str, UniversalConverter] = {}
-_chunkers: Dict[str, HybridChunker] = {}
+_converters: dict[str, UniversalConverter] = {}
+_chunkers: dict[str, HybridChunker] = {}
 
 
 def get_converter(hardware: str = "auto") -> UniversalConverter:
@@ -112,8 +106,9 @@ def get_chunker(
 # Tool Definitions
 # ============================================================================
 
+
 @app.list_tools()
-async def list_tools() -> List[Tool]:
+async def list_tools() -> list[Tool]:
     """List all available MCP tools."""
     return [
         # Document Processing Tools
@@ -270,7 +265,6 @@ async def list_tools() -> List[Tool]:
                 "required": ["file_path", "output_dir"],
             },
         ),
-
         # Chunking Tools
         Tool(
             name="chunk_document",
@@ -371,7 +365,6 @@ async def list_tools() -> List[Tool]:
                 "required": ["file_path"],
             },
         ),
-
         # Audio Tools
         Tool(
             name="transcribe_audio",
@@ -465,7 +458,6 @@ async def list_tools() -> List[Tool]:
                 "required": ["file_paths"],
             },
         ),
-
         # Utility Tools
         Tool(
             name="detect_hardware",
@@ -547,8 +539,9 @@ async def list_tools() -> List[Tool]:
 # Tool Handlers
 # ============================================================================
 
+
 @app.call_tool()
-async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     """Handle tool calls from MCP clients."""
     try:
         if name == "convert_document":
@@ -666,19 +659,22 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
         # Return result as TextContent
         import json
+
         return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
     except Exception as e:
         import traceback
+
         error_result = {
             "success": False,
             "error": {
                 "type": type(e).__name__,
                 "message": str(e),
                 "traceback": traceback.format_exc(),
-            }
+            },
         }
         import json
+
         return [TextContent(type="text", text=json.dumps(error_result, indent=2))]
 
 

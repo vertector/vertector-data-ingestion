@@ -8,18 +8,17 @@ Tests both OCR engines on the same document and compares:
 """
 
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from vertector_data_ingestion.core.universal_converter import UniversalConverter
 from vertector_data_ingestion.models.config import (
     ConverterConfig,
+    ExportFormat,
     LocalMpsConfig,
     OcrEngine,
-    OcrConfig,
-    ExportFormat
 )
 
 print("=" * 80)
@@ -54,12 +53,12 @@ try:
     doc_easyocr = converter_easyocr.convert_single(test_pdf)
     markdown_easyocr = converter_easyocr.export(doc_easyocr, ExportFormat.MARKDOWN)
 
-    results['easyocr'] = {
-        'time': doc_easyocr.metadata.processing_time,
-        'text': markdown_easyocr,
-        'chars': len(markdown_easyocr),
-        'words': len(markdown_easyocr.split()),
-        'pages': doc_easyocr.metadata.num_pages
+    results["easyocr"] = {
+        "time": doc_easyocr.metadata.processing_time,
+        "text": markdown_easyocr,
+        "chars": len(markdown_easyocr),
+        "words": len(markdown_easyocr.split()),
+        "pages": doc_easyocr.metadata.num_pages,
     }
 
     print(f"✅ Processing time: {results['easyocr']['time']:.2f}s")
@@ -74,6 +73,7 @@ try:
 except Exception as e:
     print(f"❌ EasyOCR failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 2: OCRMac (macOS native)
@@ -91,12 +91,12 @@ try:
     doc_ocrmac = converter_ocrmac.convert_single(test_pdf)
     markdown_ocrmac = converter_ocrmac.export(doc_ocrmac, ExportFormat.MARKDOWN)
 
-    results['ocrmac'] = {
-        'time': doc_ocrmac.metadata.processing_time,
-        'text': markdown_ocrmac,
-        'chars': len(markdown_ocrmac),
-        'words': len(markdown_ocrmac.split()),
-        'pages': doc_ocrmac.metadata.num_pages
+    results["ocrmac"] = {
+        "time": doc_ocrmac.metadata.processing_time,
+        "text": markdown_ocrmac,
+        "chars": len(markdown_ocrmac),
+        "words": len(markdown_ocrmac.split()),
+        "pages": doc_ocrmac.metadata.num_pages,
     }
 
     print(f"✅ Processing time: {results['ocrmac']['time']:.2f}s")
@@ -111,10 +111,11 @@ try:
 except Exception as e:
     print(f"❌ OCRMac failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Comparison
-if 'easyocr' in results and 'ocrmac' in results:
+if "easyocr" in results and "ocrmac" in results:
     print("=" * 80)
     print("COMPARISON SUMMARY")
     print("=" * 80)
@@ -124,8 +125,10 @@ if 'easyocr' in results and 'ocrmac' in results:
     print(f"  EasyOCR:  {results['easyocr']['time']:.2f}s")
     print(f"  OCRMac:   {results['ocrmac']['time']:.2f}s")
 
-    faster_engine = 'EasyOCR' if results['easyocr']['time'] < results['ocrmac']['time'] else 'OCRMac'
-    speed_diff = abs(results['easyocr']['time'] - results['ocrmac']['time'])
+    faster_engine = (
+        "EasyOCR" if results["easyocr"]["time"] < results["ocrmac"]["time"] else "OCRMac"
+    )
+    speed_diff = abs(results["easyocr"]["time"] - results["ocrmac"]["time"])
     print(f"  Winner: {faster_engine} ({speed_diff:.2f}s faster)")
     print()
 
@@ -133,14 +136,16 @@ if 'easyocr' in results and 'ocrmac' in results:
     print(f"  EasyOCR:  {results['easyocr']['chars']} chars, {results['easyocr']['words']} words")
     print(f"  OCRMac:   {results['ocrmac']['chars']} chars, {results['ocrmac']['words']} words")
 
-    more_complete = 'EasyOCR' if results['easyocr']['chars'] > results['ocrmac']['chars'] else 'OCRMac'
+    more_complete = (
+        "EasyOCR" if results["easyocr"]["chars"] > results["ocrmac"]["chars"] else "OCRMac"
+    )
     print(f"  More complete: {more_complete}")
     print()
 
     print("Recommendation:")
-    if results['ocrmac']['time'] < results['easyocr']['time'] * 0.8:
+    if results["ocrmac"]["time"] < results["easyocr"]["time"] * 0.8:
         print("  ✅ OCRMac is significantly faster - recommended for macOS")
-    elif results['easyocr']['chars'] > results['ocrmac']['chars'] * 1.2:
+    elif results["easyocr"]["chars"] > results["ocrmac"]["chars"] * 1.2:
         print("  ✅ EasyOCR extracts more text - recommended for accuracy")
     else:
         print("  ✅ Both engines perform similarly - use LocalMpsConfig (OCRMac) on macOS")

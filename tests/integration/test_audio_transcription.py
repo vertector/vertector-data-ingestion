@@ -1,8 +1,8 @@
 """Test audio transcription with Whisper."""
 
 import sys
-from pathlib import Path
 import urllib.request
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
@@ -81,20 +81,20 @@ try:
 
     # Save transcription to file
     output_file = Path("audio_transcription_output.txt")
-    with output_file.open('w') as f:
-        f.write(f"Audio Transcription Results\n")
+    with output_file.open("w") as f:
+        f.write("Audio Transcription Results\n")
         f.write(f"{'=' * 80}\n\n")
         f.write(f"File: {audio_file.name}\n")
         f.write(f"Model: {result.model_name}\n")
         f.write(f"Language: {result.language}\n")
         f.write(f"Processing time: {result.duration:.2f}s\n\n")
-        f.write(f"Full Text:\n")
+        f.write("Full Text:\n")
         f.write(f"{'-' * 80}\n")
         f.write(f"{result.text}\n")
         f.write(f"{'-' * 80}\n\n")
 
         if result.segments:
-            f.write(f"Timestamped Segments:\n")
+            f.write("Timestamped Segments:\n")
             f.write(f"{'-' * 80}\n")
             for i, seg in enumerate(result.segments, 1):
                 f.write(f"{i}. [{seg.start:.2f}s - {seg.end:.2f}s] {seg.text}\n")
@@ -104,6 +104,7 @@ try:
 except Exception as e:
     print(f"❌ Error during transcription: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 

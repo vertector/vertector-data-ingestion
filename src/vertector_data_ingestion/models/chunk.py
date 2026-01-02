@@ -1,7 +1,7 @@
 """Chunk models for RAG integration."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -15,29 +15,29 @@ class DocumentChunk(BaseModel):
 
     # Source metadata
     source_path: Path
-    document_id: Optional[str] = None
+    document_id: str | None = None
 
     # Position metadata
-    page_no: Optional[int] = None
-    section_title: Optional[str] = None
+    page_no: int | None = None
+    section_title: str | None = None
     chunk_index: int
 
     # Structural metadata
     is_table: bool = False
     is_heading: bool = False
-    heading_level: Optional[int] = None
+    heading_level: int | None = None
 
     # Bounding box for visual grounding
-    bbox: Optional[Dict[str, float]] = None  # {l, t, r, b}
+    bbox: dict[str, float] | None = None  # {l, t, r, b}
 
     # Parent context for hierarchical chunking
-    parent_section: Optional[str] = None
-    subsection_path: Optional[str] = None  # e.g., "Chapter 1 > Section 1.2 > Subsection 1.2.3"
+    parent_section: str | None = None
+    subsection_path: str | None = None  # e.g., "Chapter 1 > Section 1.2 > Subsection 1.2.3"
 
     # Custom metadata
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert chunk to dictionary for vector store ingestion.
 
@@ -110,15 +110,11 @@ class ChunkingResult(BaseModel):
                 self.total_tokens / self.total_chunks if self.total_chunks > 0 else 0
             )
         if not self.min_chunk_size:
-            self.min_chunk_size = (
-                min(c.token_count for c in self.chunks) if self.chunks else 0
-            )
+            self.min_chunk_size = min(c.token_count for c in self.chunks) if self.chunks else 0
         if not self.max_chunk_size:
-            self.max_chunk_size = (
-                max(c.token_count for c in self.chunks) if self.chunks else 0
-            )
+            self.max_chunk_size = max(c.token_count for c in self.chunks) if self.chunks else 0
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get chunking statistics.
 

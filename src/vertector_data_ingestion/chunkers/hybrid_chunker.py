@@ -1,7 +1,6 @@
 """HybridChunker implementation for RAG-ready document chunking."""
 
 from pathlib import Path
-from typing import List, Optional
 
 from docling_core.transforms.chunker import HybridChunker as DoclingHybridChunker
 from loguru import logger
@@ -23,7 +22,7 @@ class HybridChunker:
     - Metadata enrichment (page numbers, sections, bboxes)
     """
 
-    def __init__(self, config: Optional[ChunkingConfig] = None):
+    def __init__(self, config: ChunkingConfig | None = None):
         """
         Initialize hybrid chunker.
 
@@ -38,8 +37,7 @@ class HybridChunker:
         # Load tokenizer with appropriate padding side
         logger.info(f"Loading tokenizer: {self.config.tokenizer} (padding_side={padding_side})")
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.config.tokenizer,
-            padding_side=padding_side
+            self.config.tokenizer, padding_side=padding_side
         )
 
         # Create Docling chunker
@@ -193,7 +191,7 @@ class HybridChunker:
 
         return ""
 
-    def chunk_text(self, text: str, source_path: Path) -> List[DocumentChunk]:
+    def chunk_text(self, text: str, source_path: Path) -> list[DocumentChunk]:
         """
         Chunk plain text (without Docling document structure).
 

@@ -1,9 +1,7 @@
 """Caching utilities for conversion results."""
 
 import hashlib
-import json
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger
 
@@ -43,7 +41,7 @@ class ConversionCache:
                 sha256.update(chunk)
         return sha256.hexdigest()
 
-    def get(self, source: Path, export_format: str) -> Optional[str]:
+    def get(self, source: Path, export_format: str) -> str | None:
         """
         Retrieve cached conversion result.
 

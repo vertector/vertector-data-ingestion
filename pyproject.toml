@@ -83,7 +83,19 @@ build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "A", "C4", "SIM"]
+ignore = [
+    "F401",  # Unused imports in availability checks
+    "E501",  # Line too long (handled by formatter)
+    "SIM102", # Nested if statements (readability preference)
+    "SIM113", # Enumerate usage (intentional loop style)
+    "B904",  # Exception chaining (intentional)
+    "E402",  # Module level import not at top (test files)
+    "E741",  # Ambiguous variable names (l, t, r, b for bbox coordinates)
+    "A002",  # Argument shadowing builtin (format parameter is clear in context)
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

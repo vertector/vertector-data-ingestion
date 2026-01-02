@@ -2,31 +2,29 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 from docling.datamodel import vlm_model_specs
+from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
 from docling.datamodel.pipeline_options import (
+    EasyOcrOptions,
     PdfPipelineOptions,
     TableFormerMode,
-    EasyOcrOptions,
     TesseractOcrOptions,
     VlmPipelineOptions,
 )
 from docling.datamodel.pipeline_options_vlm_model import (
+    InferenceFramework,
     InlineVlmOptions,
     ResponseFormat,
-    InferenceFramework,
 )
-from docling.datamodel.accelerator_options import AcceleratorOptions, AcceleratorDevice
-from docling.pipeline.vlm_pipeline import VlmPipeline
 from loguru import logger
 
+from vertector_data_ingestion.core.hardware_detector import HardwareDetector, HardwareType
 from vertector_data_ingestion.models.config import (
     ConverterConfig,
     OcrEngine,
     PipelineType,
 )
-from vertector_data_ingestion.core.hardware_detector import HardwareDetector, HardwareType
 
 
 class DocumentType(str, Enum):
@@ -56,9 +54,7 @@ class PipelineRouter:
         self.hardware_config = HardwareDetector.detect()
         logger.info(f"Hardware detected: {self.hardware_config.device_type.value}")
 
-    def determine_pipeline(
-        self, source: Path, force_vlm: Optional[bool] = None
-    ) -> PipelineType:
+    def determine_pipeline(self, source: Path, force_vlm: bool | None = None) -> PipelineType:
         """
         Determine which pipeline to use for a document.
 
@@ -79,7 +75,10 @@ class PipelineRouter:
 
         # If user explicitly set default_pipeline to VLM (not auto), honor it
         # This allows VLM to be activated by configuration
-        if self.config.default_pipeline == PipelineType.VLM and not self.config.auto_detect_pipeline:
+        if (
+            self.config.default_pipeline == PipelineType.VLM
+            and not self.config.auto_detect_pipeline
+        ):
             logger.info(f"Using VLM pipeline (configured default) for {source.name}")
             return PipelineType.VLM
 
@@ -107,7 +106,7 @@ class PipelineRouter:
             return PipelineType.CLASSIC
 
     def build_pipeline_options(
-        self, source: Path, pipeline_type: Optional[PipelineType] = None
+        self, source: Path, pipeline_type: PipelineType | None = None
     ) -> PdfPipelineOptions:
         """
         Build PdfPipelineOptions for document conversion.
@@ -151,7 +150,8 @@ class PipelineRouter:
         # Enable and configure table structure extraction
         options.do_table_structure = True
         options.table_structure_options.mode = (
-            TableFormerMode.ACCURATE if self.config.table.mode.value == "accurate"
+            TableFormerMode.ACCURATE
+            if self.config.table.mode.value == "accurate"
             else TableFormerMode.FAST
         )
         options.table_structure_options.do_cell_matching = self.config.table.cell_matching
@@ -205,6 +205,7 @@ class PipelineRouter:
 
         # Use pre-configured models based on hardware and configuration
         import copy
+
         vlm_options = None
 
         # Check if user specified a preset model
@@ -212,19 +213,19 @@ class PipelineRouter:
 
         if self.hardware_config.device_type == HardwareType.MPS and self.config.vlm.use_mlx:
             # macOS with MPS acceleration - select MLX model based on preset
-            if preset == "qwen25-3b" and hasattr(vlm_model_specs, 'QWEN25_VL_3B_MLX'):
+            if preset == "qwen25-3b" and hasattr(vlm_model_specs, "QWEN25_VL_3B_MLX"):
                 vlm_options = copy.deepcopy(vlm_model_specs.QWEN25_VL_3B_MLX)
                 logger.info("Using Qwen2.5-VL-3B-MLX (3B params, ~23.5s/page)")
-            elif preset == "smoldocling-mlx" and hasattr(vlm_model_specs, 'SMOLDOCLING_MLX'):
+            elif preset == "smoldocling-mlx" and hasattr(vlm_model_specs, "SMOLDOCLING_MLX"):
                 vlm_options = copy.deepcopy(vlm_model_specs.SMOLDOCLING_MLX)
                 logger.info("Using SmolDocling-MLX (256M params, ~6.15s/page)")
-            elif preset == "pixtral-12b" and hasattr(vlm_model_specs, 'PIXTRAL_12B_MLX'):
+            elif preset == "pixtral-12b" and hasattr(vlm_model_specs, "PIXTRAL_12B_MLX"):
                 vlm_options = copy.deepcopy(vlm_model_specs.PIXTRAL_12B_MLX)
                 logger.info("Using Pixtral-12B-MLX (12B params, ~309s/page)")
-            elif preset == "gemma3-12b" and hasattr(vlm_model_specs, 'GEMMA3_12B_MLX'):
+            elif preset == "gemma3-12b" and hasattr(vlm_model_specs, "GEMMA3_12B_MLX"):
                 vlm_options = copy.deepcopy(vlm_model_specs.GEMMA3_12B_MLX)
                 logger.info("Using Gemma-3-12B-MLX (12B params, ~378s/page)")
-            elif preset == "granite-mlx" and hasattr(vlm_model_specs, 'GRANITEDOCLING_MLX'):
+            elif preset == "granite-mlx" and hasattr(vlm_model_specs, "GRANITEDOCLING_MLX"):
                 vlm_options = copy.deepcopy(vlm_model_specs.GRANITEDOCLING_MLX)
                 logger.info("Using Granite-Docling-MLX (258M params)")
             else:
@@ -234,16 +235,20 @@ class PipelineRouter:
 
         elif self.hardware_config.device_type == HardwareType.MPS:
             # MPS without MLX - use Transformers models
-            if preset == "granite-vision" and hasattr(vlm_model_specs, 'GRANITE_VISION_TRANSFORMERS'):
+            if preset == "granite-vision" and hasattr(
+                vlm_model_specs, "GRANITE_VISION_TRANSFORMERS"
+            ):
                 vlm_options = copy.deepcopy(vlm_model_specs.GRANITE_VISION_TRANSFORMERS)
                 logger.info("Using Granite-Vision-Transformers (2B params, ~105s/page)")
-            elif preset == "smoldocling" and hasattr(vlm_model_specs, 'SMOLDOCLING_TRANSFORMERS'):
+            elif preset == "smoldocling" and hasattr(vlm_model_specs, "SMOLDOCLING_TRANSFORMERS"):
                 vlm_options = copy.deepcopy(vlm_model_specs.SMOLDOCLING_TRANSFORMERS)
                 logger.info("Using SmolDocling-Transformers (256M params, ~102s/page)")
-            elif preset == "pixtral-12b-transformers" and hasattr(vlm_model_specs, 'PIXTRAL_12B_TRANSFORMERS'):
+            elif preset == "pixtral-12b-transformers" and hasattr(
+                vlm_model_specs, "PIXTRAL_12B_TRANSFORMERS"
+            ):
                 vlm_options = copy.deepcopy(vlm_model_specs.PIXTRAL_12B_TRANSFORMERS)
                 logger.info("Using Pixtral-12B-Transformers (12B params, ~1828s/page)")
-            elif preset == "phi4" and hasattr(vlm_model_specs, 'PHI4_TRANSFORMERS'):
+            elif preset == "phi4" and hasattr(vlm_model_specs, "PHI4_TRANSFORMERS"):
                 vlm_options = copy.deepcopy(vlm_model_specs.PHI4_TRANSFORMERS)
                 logger.info("Using Phi-4-Transformers (~1176s/page)")
             else:
@@ -252,16 +257,20 @@ class PipelineRouter:
 
         elif self.hardware_config.device_type == HardwareType.CUDA:
             # CUDA GPU - use Transformers models with GPU acceleration
-            if preset == "granite-vision" and hasattr(vlm_model_specs, 'GRANITE_VISION_TRANSFORMERS'):
+            if preset == "granite-vision" and hasattr(
+                vlm_model_specs, "GRANITE_VISION_TRANSFORMERS"
+            ):
                 vlm_options = copy.deepcopy(vlm_model_specs.GRANITE_VISION_TRANSFORMERS)
                 logger.info("Using Granite-Vision-Transformers with CUDA (2B params)")
-            elif preset == "smoldocling" and hasattr(vlm_model_specs, 'SMOLDOCLING_TRANSFORMERS'):
+            elif preset == "smoldocling" and hasattr(vlm_model_specs, "SMOLDOCLING_TRANSFORMERS"):
                 vlm_options = copy.deepcopy(vlm_model_specs.SMOLDOCLING_TRANSFORMERS)
                 logger.info("Using SmolDocling-Transformers with CUDA (256M params)")
-            elif preset == "pixtral-12b-transformers" and hasattr(vlm_model_specs, 'PIXTRAL_12B_TRANSFORMERS'):
+            elif preset == "pixtral-12b-transformers" and hasattr(
+                vlm_model_specs, "PIXTRAL_12B_TRANSFORMERS"
+            ):
                 vlm_options = copy.deepcopy(vlm_model_specs.PIXTRAL_12B_TRANSFORMERS)
                 logger.info("Using Pixtral-12B-Transformers with CUDA (12B params)")
-            elif preset == "phi4" and hasattr(vlm_model_specs, 'PHI4_TRANSFORMERS'):
+            elif preset == "phi4" and hasattr(vlm_model_specs, "PHI4_TRANSFORMERS"):
                 vlm_options = copy.deepcopy(vlm_model_specs.PHI4_TRANSFORMERS)
                 logger.info("Using Phi-4-Transformers with CUDA")
             else:
@@ -270,10 +279,12 @@ class PipelineRouter:
 
         else:
             # CPU fallback - use Transformers models
-            if preset == "granite-vision" and hasattr(vlm_model_specs, 'GRANITE_VISION_TRANSFORMERS'):
+            if preset == "granite-vision" and hasattr(
+                vlm_model_specs, "GRANITE_VISION_TRANSFORMERS"
+            ):
                 vlm_options = copy.deepcopy(vlm_model_specs.GRANITE_VISION_TRANSFORMERS)
                 logger.info("Using Granite-Vision-Transformers on CPU (2B params)")
-            elif preset == "smoldocling" and hasattr(vlm_model_specs, 'SMOLDOCLING_TRANSFORMERS'):
+            elif preset == "smoldocling" and hasattr(vlm_model_specs, "SMOLDOCLING_TRANSFORMERS"):
                 vlm_options = copy.deepcopy(vlm_model_specs.SMOLDOCLING_TRANSFORMERS)
                 logger.info("Using SmolDocling-Transformers on CPU (256M params)")
             else:
@@ -292,12 +303,10 @@ class PipelineRouter:
         }
 
         logger.debug(f"Applied engineered prompt ({len(engineered_prompt)} chars)")
-        logger.debug(f"Generation config: temp=0.1, do_sample=False, rep_penalty=1.2")
+        logger.debug("Generation config: temp=0.1, do_sample=False, rep_penalty=1.2")
 
         # Create VlmPipelineOptions with selected model
-        options = VlmPipelineOptions(
-            vlm_options=vlm_options
-        )
+        options = VlmPipelineOptions(vlm_options=vlm_options)
 
         logger.debug(f"VLM pipeline configured with model: {self.config.vlm.model_name}")
         return options
@@ -417,12 +426,12 @@ class PipelineRouter:
     def _get_default_vlm_prompt(self) -> str:
         """
         Get well-engineered default VLM prompt for document extraction.
-        
+
         Based on Granite-Docling best practices and prompt engineering research:
         - Official Granite-Docling prompt format
         - Specific, structured instructions
         - Clear output format expectations
-        
+
         Returns:
             Engineered prompt string optimized for document conversion
         """
@@ -444,5 +453,5 @@ class PipelineRouter:
 7. Output only the converted markdown content
 
 Convert this page to markdown."""
-        
+
         return prompt

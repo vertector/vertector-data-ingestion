@@ -1,7 +1,7 @@
 """ChromaDB vector store adapter."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from loguru import logger
 
@@ -15,7 +15,7 @@ class ChromaAdapter(VectorStoreAdapter):
     def __init__(
         self,
         collection_name: str = "documents",
-        persist_directory: Optional[Path] = None,
+        persist_directory: Path | None = None,
         embedding_model: str = "Qwen/Qwen3-Embedding-4B",
     ):
         """
@@ -60,9 +60,7 @@ class ChromaAdapter(VectorStoreAdapter):
 
         logger.info(f"Using collection: {collection_name}")
 
-    def add_chunks(
-        self, chunks: List[DocumentChunk], batch_size: int = 16
-    ) -> None:
+    def add_chunks(self, chunks: list[DocumentChunk], batch_size: int = 16) -> None:
         """
         Add document chunks to ChromaDB in batches to avoid memory issues.
 
@@ -149,8 +147,8 @@ class ChromaAdapter(VectorStoreAdapter):
         logger.info(f"Successfully added {len(chunks)} chunks in {total_batches} batches")
 
     def search(
-        self, query: str, top_k: int = 5, filters: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+        self, query: str, top_k: int = 5, filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """
         Search for similar chunks.
 
@@ -219,7 +217,7 @@ class ChromaAdapter(VectorStoreAdapter):
         else:
             logger.info("No chunks found to delete")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get ChromaDB collection statistics.
 

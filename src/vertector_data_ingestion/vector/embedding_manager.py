@@ -1,7 +1,5 @@
 """Embedding model management."""
 
-from typing import List, Optional
-
 from loguru import logger
 from sentence_transformers import SentenceTransformer
 
@@ -27,11 +25,11 @@ class EmbeddingManager:
 
     def encode(
         self,
-        texts: List[str],
+        texts: list[str],
         batch_size: int = 32,
         show_progress: bool = False,
         normalize: bool = True,
-    ) -> List[List[float]]:
+    ) -> list[list[float]]:
         """
         Encode texts to embeddings.
 
@@ -53,7 +51,7 @@ class EmbeddingManager:
 
         return embeddings.tolist()
 
-    def encode_single(self, text: str, normalize: bool = True) -> List[float]:
+    def encode_single(self, text: str, normalize: bool = True) -> list[float]:
         """
         Encode single text to embedding.
 

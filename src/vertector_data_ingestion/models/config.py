@@ -2,7 +2,6 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -72,7 +71,7 @@ class OcrConfig(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="VERTECTOR_OCR_")
 
     engine: OcrEngine = OcrEngine.EASYOCR
-    languages: List[str] = Field(default_factory=lambda: ["en"])
+    languages: list[str] = Field(default_factory=lambda: ["en"])
     use_gpu: bool = True
     confidence_threshold: float = 0.5
 
@@ -96,9 +95,9 @@ class AudioConfig(BaseSettings):
     backend: AudioBackend = AudioBackend.AUTO
 
     # Transcription parameters
-    language: Optional[str] = None  # Auto-detect if None (e.g., 'en', 'es', 'fr')
+    language: str | None = None  # Auto-detect if None (e.g., 'en', 'es', 'fr')
     word_timestamps: bool = True  # Enable word-level timestamps
-    initial_prompt: Optional[str] = None  # Optional prompt to guide transcription
+    initial_prompt: str | None = None  # Optional prompt to guide transcription
 
     # Performance settings
     beam_size: int = 5  # Beam search size (higher = more accurate, slower)
@@ -121,11 +120,11 @@ class VlmConfig(BaseSettings):
     # Pre-configured model selection (alternative to custom_model_repo_id)
     # MLX models (Apple Silicon): "granite-mlx", "smoldocling-mlx", "qwen25-3b", "pixtral-12b", "gemma3-12b"
     # Transformers models (CUDA/CPU): "granite", "smoldocling", "granite-vision", "phi4", "pixtral-12b-transformers"
-    preset_model: Optional[str] = None
+    preset_model: str | None = None
 
     # Custom model configuration (optional - for non-default models)
-    custom_model_repo_id: Optional[str] = None  # Hugging Face repo ID
-    custom_model_prompt: Optional[str] = None  # Custom prompt for the model
+    custom_model_repo_id: str | None = None  # Hugging Face repo ID
+    custom_model_prompt: str | None = None  # Custom prompt for the model
 
     enable_picture_description: bool = True  # Enable AI-driven image captions
     enable_picture_classification: bool = True  # Enable image classification
@@ -153,7 +152,7 @@ class ChunkingConfig(BaseSettings):
     size: int = Field(default=2048, alias="chunk_size")
     tokenizer: str = Field(
         default="Qwen/Qwen3-Embedding-4B",
-        description="Hugging Face tokenizer model (auto-detects padding side)"
+        description="Hugging Face tokenizer model (auto-detects padding side)",
     )
     merge_peers: bool = True
     max_tokens: int = 2048  # Default for compatibility, Qwen3-Embedding-4B supports 32,768
@@ -179,7 +178,7 @@ class VectorStoreConfig(BaseSettings):
     vector_store: VectorStoreType = VectorStoreType.CHROMA
     embedding_model: str = Field(
         default="Qwen/Qwen3-Embedding-4B",
-        description="Hugging Face embedding model for vector encoding"
+        description="Hugging Face embedding model for vector encoding",
     )
     chroma_persist_dir: Path = Field(default_factory=lambda: Path("./chroma_db"))
 
@@ -223,13 +222,11 @@ class ConverterConfig(BaseSettings):
     )
 
     # Output directory
-    output_dir: Path = Field(
-        default_factory=lambda: Path("./output")
-    )
+    output_dir: Path = Field(default_factory=lambda: Path("./output"))
 
     # Logging
     log_level: str = "INFO"
-    log_file: Optional[str] = None
+    log_file: str | None = None
 
     # Performance
     batch_processing_workers: int = 4
@@ -245,19 +242,15 @@ class LocalMpsConfig(ConverterConfig):
         extra="ignore",
     )
 
-    vlm: VlmConfig = Field(
-        default_factory=lambda: VlmConfig(use_mlx=True, batch_size=8)
-    )
+    vlm: VlmConfig = Field(default_factory=lambda: VlmConfig(use_mlx=True, batch_size=8))
     ocr: OcrConfig = Field(
         default_factory=lambda: OcrConfig(
             engine=OcrEngine.OCRMAC,
             use_gpu=True,
-            languages=["en-US"]  # OCRMac requires locale-specific language codes
+            languages=["en-US"],  # OCRMac requires locale-specific language codes
         )
     )
-    audio: AudioConfig = Field(
-        default_factory=lambda: AudioConfig(backend=AudioBackend.MLX)
-    )
+    audio: AudioConfig = Field(default_factory=lambda: AudioConfig(backend=AudioBackend.MLX))
 
 
 class CloudGpuConfig(ConverterConfig):
@@ -270,9 +263,7 @@ class CloudGpuConfig(ConverterConfig):
         extra="ignore",
     )
 
-    vlm: VlmConfig = Field(
-        default_factory=lambda: VlmConfig(use_mlx=False, batch_size=16)
-    )
+    vlm: VlmConfig = Field(default_factory=lambda: VlmConfig(use_mlx=False, batch_size=16))
     ocr: OcrConfig = Field(
         default_factory=lambda: OcrConfig(engine=OcrEngine.EASYOCR, use_gpu=True)
     )

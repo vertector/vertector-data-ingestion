@@ -1,15 +1,12 @@
 """Utility tools for MCP server."""
 
-import json
 from pathlib import Path
-from typing import Any, Dict, List
-import asyncio
+from typing import Any
 
-from vertector_data_ingestion import ExportFormat
 from vertector_data_ingestion.core.hardware_detector import HardwareDetector
 
 
-async def detect_hardware() -> Dict[str, Any]:
+async def detect_hardware() -> dict[str, Any]:
     """Detect available hardware acceleration options.
 
     Returns:
@@ -38,12 +35,16 @@ async def detect_hardware() -> Dict[str, Any]:
         # Add recommendations
         if has_mps:
             hardware_info["recommended"] = "mps"
-            hardware_info["recommendation_reason"] = f"Apple Silicon ({hw_info.get('chip', 'unknown')}) MPS detected - optimal for VLM and audio"
+            hardware_info["recommendation_reason"] = (
+                f"Apple Silicon ({hw_info.get('chip', 'unknown')}) MPS detected - optimal for VLM and audio"
+            )
         elif has_cuda:
             gpu_name = hw_info.get("gpu_name", "Unknown GPU")
             gpu_memory = hw_info.get("gpu_memory_gb", 0)
             hardware_info["recommended"] = "cuda"
-            hardware_info["recommendation_reason"] = f"NVIDIA GPU detected: {gpu_name} ({gpu_memory:.1f} GB)"
+            hardware_info["recommendation_reason"] = (
+                f"NVIDIA GPU detected: {gpu_name} ({gpu_memory:.1f} GB)"
+            )
             hardware_info["cuda_devices"] = 1
         else:
             hardware_info["recommended"] = "cpu"
@@ -59,7 +60,7 @@ async def detect_hardware() -> Dict[str, Any]:
         }
 
 
-async def list_export_formats() -> Dict[str, Any]:
+async def list_export_formats() -> dict[str, Any]:
     """List all supported export formats with descriptions.
 
     Returns:
@@ -104,7 +105,7 @@ async def list_export_formats() -> Dict[str, Any]:
 
 async def validate_file(
     file_path: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Validate that a file exists and is supported.
 
     Args:
@@ -118,18 +119,33 @@ async def validate_file(
 
         # Supported extensions
         supported_documents = {
-            ".pdf", ".docx", ".pptx", ".xlsx",
-            ".doc", ".ppt", ".xls",  # Legacy formats
-            ".html", ".htm",
+            ".pdf",
+            ".docx",
+            ".pptx",
+            ".xlsx",
+            ".doc",
+            ".ppt",
+            ".xls",  # Legacy formats
+            ".html",
+            ".htm",
         }
         supported_images = {
-            ".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".bmp",
+            ".tiff",
+            ".tif",
         }
         supported_audio = {
-            ".wav", ".mp3", ".m4a", ".flac", ".ogg",
+            ".wav",
+            ".mp3",
+            ".m4a",
+            ".flac",
+            ".ogg",
         }
 
-        all_supported = supported_documents | supported_images | supported_audio
+        supported_documents | supported_images | supported_audio
 
         if not path.exists():
             return {
@@ -182,10 +198,10 @@ async def validate_file(
 
 
 async def estimate_processing_time(
-    file_paths: List[str],
-    operations: List[str],
+    file_paths: list[str],
+    operations: list[str],
     hardware: str = "auto",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Estimate processing time for documents.
 
     Args:

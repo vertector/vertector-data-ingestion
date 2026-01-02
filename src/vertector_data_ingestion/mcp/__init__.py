@@ -11,6 +11,6 @@ Usage:
     python -m vertector_data_ingestion.mcp.server
 """
 
-from .server import app, main, async_main
+from .server import app, async_main, main
 
 __all__ = ["app", "main", "async_main"]

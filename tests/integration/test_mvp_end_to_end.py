@@ -9,14 +9,14 @@ Tests the complete workflow:
 """
 
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+from vertector_data_ingestion.chunkers.hybrid_chunker import HybridChunker
 from vertector_data_ingestion.core.universal_converter import UniversalConverter
 from vertector_data_ingestion.models.config import ConverterConfig, ExportFormat
-from vertector_data_ingestion.chunkers.hybrid_chunker import HybridChunker
 
 # Create output directory
 OUTPUT_DIR = Path("mvp_test_output")
@@ -62,13 +62,15 @@ for idx, doc_info in enumerate(test_docs, 1):
 
     try:
         # Step 1: Ingest document
-        print(f"   Step 1/4: Ingesting document...")
+        print("   Step 1/4: Ingesting document...")
         doc_wrapper = converter.convert_single(doc_info["path"])
-        print(f"   ✅ Ingested: {doc_wrapper.metadata.num_pages} pages in {doc_wrapper.metadata.processing_time:.2f}s")
+        print(
+            f"   ✅ Ingested: {doc_wrapper.metadata.num_pages} pages in {doc_wrapper.metadata.processing_time:.2f}s"
+        )
         print(f"      Pipeline: {doc_wrapper.metadata.pipeline_type}")
 
         # Step 2: Export to all formats
-        print(f"   Step 2/4: Exporting to all formats...")
+        print("   Step 2/4: Exporting to all formats...")
 
         # Create document-specific output directory
         doc_output_dir = OUTPUT_DIR / doc_info["path"].stem
@@ -93,7 +95,7 @@ for idx, doc_info in enumerate(test_docs, 1):
         print(f"   ✅ DocTags: {len(doctags_content):,} chars → {doctags_file}")
 
         # Step 3: Chunk for RAG
-        print(f"   Step 3/4: Chunking for RAG...")
+        print("   Step 3/4: Chunking for RAG...")
         chunking_result = chunker.chunk_document(doc_wrapper)
         num_chunks = len(chunking_result.chunks)
 
@@ -109,7 +111,7 @@ for idx, doc_info in enumerate(test_docs, 1):
             print(f"      Token range: {min_tokens}-{max_tokens}")
 
             # Step 4: Save chunks to file
-            print(f"   Step 4/4: Saving chunks...")
+            print("   Step 4/4: Saving chunks...")
             chunks_file = doc_output_dir / f"{doc_info['path'].stem}_chunks.txt"
             with chunks_file.open("w", encoding="utf-8") as f:
                 f.write(f"Document: {doc_info['name']}\n")
@@ -129,20 +131,23 @@ for idx, doc_info in enumerate(test_docs, 1):
 
             print(f"   ✅ Chunks saved → {chunks_file}")
         else:
-            print(f"   ⚠️  No chunks created")
+            print("   ⚠️  No chunks created")
 
-        results.append({
-            "doc": doc_info["name"],
-            "status": "SUCCESS",
-            "pages": doc_wrapper.metadata.num_pages,
-            "time": doc_wrapper.metadata.processing_time,
-            "chunks": num_chunks,
-            "output_dir": str(doc_output_dir)
-        })
+        results.append(
+            {
+                "doc": doc_info["name"],
+                "status": "SUCCESS",
+                "pages": doc_wrapper.metadata.num_pages,
+                "time": doc_wrapper.metadata.processing_time,
+                "chunks": num_chunks,
+                "output_dir": str(doc_output_dir),
+            }
+        )
 
     except Exception as e:
         print(f"   ❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         results.append({"doc": doc_info["name"], "status": "FAILED", "error": str(e)})
 
@@ -165,7 +170,9 @@ if successful:
     print("✅ Successful Documents:")
     for result in successful:
         print(f"   • {result['doc']}")
-        print(f"     Pages: {result['pages']}, Time: {result['time']:.2f}s, Chunks: {result['chunks']}")
+        print(
+            f"     Pages: {result['pages']}, Time: {result['time']:.2f}s, Chunks: {result['chunks']}"
+        )
         print(f"     Output: {result['output_dir']}")
     print()
 
