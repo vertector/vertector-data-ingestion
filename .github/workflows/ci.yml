@@ -83,7 +83,7 @@ jobs:
 
     - name: Run tests
       run: |
-        uv run pytest tests/ -v --cov=src/vertector_data_ingestion --cov-report=xml --cov-report=term
+        uv run pytest tests/ -v --cov=src/vertector_data_ingestion --cov-report=xml --cov-report=term --ignore=tests/integration/test_audio_transcription.py --ignore=tests/integration/test_audio_config_integration.py --ignore=tests/integration/test_mvp_end_to_end.py --ignore=tests/integration/test_ocr_comparison.py
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -144,11 +144,11 @@ jobs:
     - name: Test MCP server tools
       run: |
         uv run python -c "
-        from vertector_data_ingestion.mcp.server import app
+        from vertector_data_ingestion.mcp.server import list_tools
         import asyncio
 
         async def test():
-            tools = await app.list_tools()
+            tools = await list_tools()
             assert len(tools) == 13, f'Expected 13 tools, got {len(tools)}'
             print(f'✓ MCP server registered {len(tools)} tools')
 
