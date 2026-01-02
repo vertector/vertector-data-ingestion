@@ -81,6 +81,10 @@ docs/_build/
 # Test outputs
 test_outputs/
 test_fixtures/output/
+test_documents/*.tar.gz
+test_documents/*.zip
+*.tar.gz
+*.zip
 
 # Jupyter
 .ipynb_checkpoints/
