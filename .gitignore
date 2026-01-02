@@ -85,3 +85,12 @@ test_fixtures/output/
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints
+
+# CI/CD
+.github/workflows/*.log
+coverage.xml
+*.coverage
+.coverage.*
+
+# Pre-commit
+.pre-commit-config.yaml.backup

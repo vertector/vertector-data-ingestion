@@ -75,6 +75,7 @@ all = [
 
 [project.scripts]
 vertector = "vertector_data_ingestion.cli.main:cli"
+vertector-data-ingestion-mcp = "vertector_data_ingestion.mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

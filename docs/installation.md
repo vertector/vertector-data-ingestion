@@ -205,7 +205,7 @@ from vertector_data_ingestion import HardwareDetector
 
 info = HardwareDetector.get_device_info()
 print(info)
-# Expected: {'device_type': 'mps', 'has_mps': True, ...}
+# Expected: {'device_type': 'mps', 'chip': 'M3', 'use_mlx': True, ...}
 ```
 
 ### NVIDIA GPU
@@ -231,7 +231,7 @@ from vertector_data_ingestion import HardwareDetector
 
 info = HardwareDetector.get_device_info()
 print(info)
-# Expected: {'device_type': 'cuda', 'has_cuda': True, ...}
+# Expected: {'device_type': 'cuda', 'gpu_name': 'NVIDIA RTX 4090', 'gpu_memory_gb': 24.0, ...}
 ```
 
 ### CPU-Only
@@ -276,8 +276,9 @@ from vertector_data_ingestion import HardwareDetector
 # Check detected hardware
 config = HardwareDetector.detect()
 print(f"Device: {config.device_type}")
-print(f"MPS: {config.has_mps}")
-print(f"CUDA: {config.has_cuda}")
+print(f"Device type: {config.device_type.value}")
+print(f"Batch size: {config.batch_size}")
+print(f"Use FP16: {config.use_fp16}")
 
 # Get detailed info
 info = HardwareDetector.get_device_info()
