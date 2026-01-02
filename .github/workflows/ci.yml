@@ -149,7 +149,7 @@ jobs:
 
         async def test():
             tools = await list_tools()
-            assert len(tools) == 13, f'Expected 13 tools, got {len(tools)}'
+            assert len(tools) == 14, f'Expected 14 tools, got {len(tools)}'
             print(f'✓ MCP server registered {len(tools)} tools')
 
         asyncio.run(test())

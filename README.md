@@ -53,12 +53,12 @@ Vertector is a comprehensive data ingestion system built on IBM's Docling framew
 
 ### 🔌 MCP Server
 
-Native Model Context Protocol server with 13 tools for AI assistants:
+Native Model Context Protocol server with 14 tools for AI assistants:
 
 - **Document Processing** (5 tools): convert, batch convert, extract metadata/tables/images
 - **Chunking** (3 tools): chunk documents/text, analyze distribution
 - **Audio** (2 tools): transcribe audio, batch transcribe
-- **Utilities** (3 tools): detect hardware, validate files, estimate processing time
+- **Utilities** (4 tools): detect hardware, list formats, validate files, estimate time
 
 [Learn more about MCP Server →](docs/mcp-server.md)
 
@@ -259,6 +259,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 - `detect_hardware` - Detect MPS/CUDA/CPU capabilities
 - `list_export_formats` - List supported export formats
 - `validate_file` - Validate file format support
+- `estimate_processing_time` - Estimate processing time for a file
 
 For complete MCP documentation, see [MCP Server Guide](docs/mcp-server.md).
 
