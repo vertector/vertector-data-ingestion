@@ -1,31 +1,69 @@
 # Vertector Data Ingestion
 
-Production-grade universal multimodal data ingestion pipeline for documents, images, and audio.
+<div align="center">
+
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/vertector/vertector-data-ingestion/workflows/CI/badge.svg)](https://github.com/vertector/vertector-data-ingestion/actions)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+
+**Production-grade universal multimodal data ingestion pipeline for RAG applications**
+
+[Features](#features) • [Installation](#installation) • [Quick Start](#quick-start) • [MCP Server](#mcp-server) • [Documentation](#documentation)
+
+</div>
+
+---
 
 ## Overview
 
 Vertector is a comprehensive data ingestion system built on IBM's Docling framework, designed for RAG (Retrieval-Augmented Generation) applications. It provides unified processing for multiple data modalities with hardware acceleration and production-ready features.
 
+### Why Vertector?
+
+- **🎯 One Pipeline, All Formats**: Process documents, images, and audio with a single unified API
+- **⚡ Hardware Accelerated**: Auto-detect and optimize for Apple Silicon (MPS), NVIDIA (CUDA), or CPU
+- **🧠 RAG-Optimized**: Hierarchical chunking with rich metadata for better retrieval
+- **🚀 Production Ready**: Caching, retry logic, batch processing, and monitoring built-in
+- **🔌 MCP Integration**: Native Model Context Protocol server for AI assistants
+
 ## Features
 
-### Multimodal Support
-- **Documents**: PDF, DOCX, PPTX, XLSX, HTML with advanced table detection
-- **Images**: Standalone image processing with VLM (Vision-Language Models)
-- **Audio**: Speech-to-text transcription with Whisper (MLX/CUDA/CPU)
+### 📄 Multimodal Support
 
-### Intelligent Processing
-- **Dual Pipeline Architecture**: Auto-routing between Classic and VLM pipelines
-- **Hardware Acceleration**: Auto-detect and optimize for MPS (Apple Silicon), CUDA (NVIDIA), or CPU
-- **OCR Engine Selection**: EasyOCR, Tesseract, OCRMac (macOS native)
+| Modality | Formats | Features |
+|----------|---------|----------|
+| **Documents** | PDF, DOCX, PPTX, XLSX, HTML | Advanced table detection, layout preservation |
+| **Images** | PNG, JPG, TIFF | Vision-Language Model processing |
+| **Audio** | WAV, MP3, M4A, FLAC | Speech-to-text with Whisper (MLX/CUDA/CPU) |
+
+### 🤖 Intelligent Processing
+
+- **Dual Pipeline Architecture**: Auto-routing between Classic (layout-based) and VLM (vision-based) pipelines
+- **Hardware Auto-Detection**: Optimize for MPS (Apple Silicon), CUDA (NVIDIA GPU), or CPU
+- **OCR Engine Selection**: EasyOCR (GPU-accelerated), Tesseract (lightweight), OCRMac (native macOS)
 - **VLM Model Presets**: Granite, SmolDocling, Qwen2.5-VL, Pixtral, Gemma3, Phi4
 
-### RAG-Ready Output
-- **Hierarchical Chunking**: Token-aware chunking with metadata enrichment
+### 🎯 RAG-Ready Output
+
+- **Hierarchical Chunking**: Token-aware chunking with section hierarchy and metadata
 - **Multiple Export Formats**: Markdown, JSON, DocTags
 - **Vector Store Integration**: ChromaDB, Pinecone, Qdrant, OpenSearch
 - **Embedding Support**: Qwen3-Embedding-4B (32K context window)
 
-### Production Features
+### 🔌 MCP Server
+
+Native Model Context Protocol server with 13 tools for AI assistants:
+
+- **Document Processing** (5 tools): convert, batch convert, extract metadata/tables/images
+- **Chunking** (3 tools): chunk documents/text, analyze distribution
+- **Audio** (2 tools): transcribe audio, batch transcribe
+- **Utilities** (3 tools): detect hardware, validate files, estimate processing time
+
+[Learn more about MCP Server →](docs/mcp-server.md)
+
+### 🚀 Production Features
+
 - **Unified Configuration**: Environment variables, config files, or programmatic
 - **Caching & Retry Logic**: Configurable caching with intelligent retry
 - **Batch Processing**: Multi-worker parallel processing
@@ -34,34 +72,46 @@ Vertector is a comprehensive data ingestion system built on IBM's Docling framew
 ## Installation
 
 ### Prerequisites
-- Python 3.10+
-- uv package manager
 
-### Basic Installation
+- **Python 3.12+**
+- **uv package manager** (recommended)
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Quick Install
 
 ```bash
 # Clone repository
-git clone <repository-url>
+git clone https://github.com/vertector/vertector-data-ingestion.git
 cd vertector-data-ingestion
 
-# Install dependencies
+# Install core dependencies
 uv sync
 
-# For development
-uv sync --extra dev
+# Install with all features
+uv sync --all-extras
 ```
 
 ### Optional Dependencies
 
 ```bash
-# For audio transcription (choose one)
-uv add openai-whisper              # Standard Whisper (CUDA/CPU)
-uv add mlx-whisper                  # MLX Whisper (Apple Silicon)
+# Audio transcription
+uv sync --extra asr         # Whisper (MLX + standard)
 
-# For specific OCR engines
-uv add easyocr                      # EasyOCR
-uv add pytesseract tesseract        # Tesseract
+# Apple Silicon acceleration
+uv sync --extra mlx         # MLX for M1/M2/M3/M4
+
+# MCP server
+uv sync --extra mcp         # Model Context Protocol
+
+# Development
+uv sync --extra dev         # Testing, linting, type checking
 ```
+
+For detailed installation instructions, see [Installation Guide](docs/installation.md).
 
 ## Quick Start
 
@@ -82,7 +132,7 @@ markdown = converter.export(doc, ExportFormat.MARKDOWN)
 print(markdown)
 ```
 
-### Using Configuration Presets
+### Hardware-Optimized Processing
 
 ```python
 from vertector_data_ingestion import LocalMpsConfig, UniversalConverter
@@ -91,7 +141,7 @@ from vertector_data_ingestion import LocalMpsConfig, UniversalConverter
 config = LocalMpsConfig()
 converter = UniversalConverter(config)
 
-# Process document
+# Process document with MPS acceleration
 doc = converter.convert_single("presentation.pptx")
 ```
 
@@ -109,7 +159,7 @@ from vertector_data_ingestion import (
 # Configure audio transcription
 audio_config = AudioConfig(
     model_size=WhisperModelSize.BASE,
-    backend=AudioBackend.MLX,  # or AUTO for auto-detection
+    backend=AudioBackend.AUTO,  # Auto-detect best backend
     language="en",
     word_timestamps=True,
 )
@@ -151,7 +201,78 @@ vector_store = ChromaAdapter(collection_name="research_papers")
 vector_store.add_chunks(chunks)
 ```
 
+For more examples, see [Quick Start Guide](docs/quickstart.md).
+
+## MCP Server
+
+Vertector includes a native Model Context Protocol (MCP) server that exposes all processing capabilities as tools for AI assistants like Claude.
+
+### Installation
+
+```bash
+# Install with MCP support
+uv sync --extra mcp
+
+# Verify installation
+uv run vertector-data-ingestion-mcp --help
+```
+
+### Configuration for Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "vertector-data-ingestion-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/vertector-data-ingestion",
+        "run",
+        "vertector-data-ingestion-mcp"
+      ]
+    }
+  }
+}
+```
+
+### Available Tools
+
+#### Document Processing
+- `convert_document` - Convert documents with hardware auto-detection
+- `batch_convert_documents` - Process multiple documents efficiently
+- `extract_metadata` - Extract document metadata and structure
+- `extract_tables` - Extract tables with formatting preservation
+- `extract_images` - Extract images with bounding boxes
+
+#### Chunking
+- `chunk_document` - Create semantic chunks from documents
+- `chunk_text` - Chunk raw text directly
+- `analyze_chunk_distribution` - Analyze chunk size statistics
+
+#### Audio
+- `transcribe_audio` - Transcribe audio files with hardware acceleration
+- `batch_transcribe_audio` - Process multiple audio files
+
+#### Utilities
+- `detect_hardware` - Detect MPS/CUDA/CPU capabilities
+- `list_export_formats` - List supported export formats
+- `validate_file` - Validate file format support
+
+For complete MCP documentation, see [MCP Server Guide](docs/mcp-server.md).
+
 ## Configuration
+
+### Configuration Presets
+
+Vertector provides three optimized configuration presets:
+
+| Preset | Hardware | Best For | Features |
+|--------|----------|----------|----------|
+| `LocalMpsConfig` | Apple Silicon (M1/M2/M3/M4) | macOS development | MLX acceleration, OCRMac |
+| `CloudGpuConfig` | NVIDIA GPU (CUDA) | Cloud/production | CUDA acceleration, EasyOCR |
+| `CloudCpuConfig` | CPU-only | Universal | Lightweight, Tesseract OCR |
 
 ### Environment Variables
 
@@ -169,7 +290,6 @@ export VERTECTOR_VLM_BATCH_SIZE=8
 export VERTECTOR_AUDIO_MODEL_SIZE=base
 export VERTECTOR_AUDIO_BACKEND=mlx
 export VERTECTOR_AUDIO_LANGUAGE=en
-export VERTECTOR_AUDIO_BEAM_SIZE=5
 
 # OCR Configuration
 export VERTECTOR_OCR_ENGINE=easyocr
@@ -221,6 +341,37 @@ config = ConverterConfig(
 )
 ```
 
+For complete configuration documentation, see [Configuration Guide](docs/configuration.md).
+
+## Documentation
+
+- [Installation Guide](docs/installation.md) - Detailed installation instructions
+- [Quick Start](docs/quickstart.md) - Get started quickly
+- [User Guide](docs/user-guide.md) - Comprehensive usage guide
+- [MCP Server](docs/mcp-server.md) - Model Context Protocol integration
+- [Configuration](docs/configuration.md) - Configuration options
+- [API Reference](docs/api-reference.md) - API documentation
+- [Examples](examples/) - Code examples
+
+## Performance
+
+### Hardware Recommendations
+
+| Modality | Best Hardware | Recommended Model | Performance |
+|----------|--------------|-------------------|-------------|
+| Documents (VLM) | Apple M-series / NVIDIA GPU | Granite-Docling-258M | ~10-20x faster |
+| Documents (Classic) | Any | N/A | Universal |
+| Audio | Apple M-series / NVIDIA GPU | Whisper Base/Small | ~15x faster (MLX) |
+| OCR | GPU-accelerated | EasyOCR | GPU-optimized |
+
+### Optimization Tips
+
+1. **Use MLX on Apple Silicon**: 10-20x faster than CPU for VLM/audio
+2. **Enable caching**: Reduces redundant processing
+3. **Batch processing**: Use `convert_batch()` for multiple files
+4. **Choose appropriate models**: Smaller models (base, small) for faster processing
+5. **Adjust batch sizes**: Increase for better GPU utilization
+
 ## Architecture
 
 ```
@@ -233,74 +384,14 @@ vertector-data-ingestion/
 │   ├── exporters/         # Export formats (Markdown, JSON, DocTags)
 │   ├── models/            # Data models & configuration
 │   ├── vector/            # Vector store adapters
+│   ├── mcp/               # MCP server implementation
 │   └── monitoring/        # Logging & metrics
 ├── tests/
 │   ├── integration/       # Integration tests
 │   ├── unit/              # Unit tests
 │   └── fixtures/          # Test fixtures
-└── examples/              # Usage examples
-```
-
-## Configuration Presets
-
-### LocalMpsConfig (macOS/Apple Silicon)
-- MLX acceleration for VLM and audio
-- OCRMac for native macOS OCR
-- Optimized batch sizes
-
-### CloudGpuConfig (CUDA/Cloud)
-- CUDA acceleration
-- EasyOCR with GPU
-- Larger batch sizes
-- Production-ready defaults
-
-### CloudCpuConfig (CPU-only)
-- CPU-optimized settings
-- Tesseract OCR
-- Conservative batch sizes
-
-## Advanced Features
-
-### Custom VLM Models
-
-```python
-from vertector_data_ingestion.models.config import VlmConfig
-
-vlm_config = VlmConfig(
-    use_mlx=True,
-    custom_model_repo_id="your-org/custom-vlm-model",
-    custom_model_prompt="Custom prompt for your model",
-    enable_picture_description=True,
-)
-```
-
-### Batch Processing
-
-```python
-from pathlib import Path
-
-# Process multiple documents
-documents = [
-    Path("doc1.pdf"),
-    Path("doc2.docx"),
-    Path("doc3.pptx"),
-]
-
-results = converter.convert_batch(documents)
-```
-
-### Pipeline Selection
-
-```python
-from vertector_data_ingestion import PipelineRouter, PipelineType
-
-router = PipelineRouter(config)
-
-# Force specific pipeline
-doc = router.route_document(
-    path="document.pdf",
-    override_pipeline=PipelineType.VLM  # or PipelineType.CLASSIC
-)
+├── examples/              # Usage examples
+└── docs/                  # Documentation
 ```
 
 ## Testing
@@ -309,34 +400,18 @@ doc = router.route_document(
 # Run all tests
 uv run pytest
 
+# Run with coverage
+uv run pytest --cov=src/vertector_data_ingestion --cov-report=term
+
 # Run integration tests
 uv run pytest tests/integration/
 
 # Run specific test
 uv run pytest tests/integration/test_audio_transcription.py
 
-# With coverage
-uv run pytest --cov=src/vertector_data_ingestion
+# Run MCP server tests
+uv run pytest tests/integration/test_mcp_server.py
 ```
-
-## Performance
-
-### Hardware Recommendations
-
-| Modality | Best Hardware | Recommended Model |
-|----------|--------------|-------------------|
-| Documents (VLM) | Apple M-series / NVIDIA GPU | Granite-Docling-258M, Qwen2.5-VL-3B |
-| Documents (Classic) | Any | N/A |
-| Audio | Apple M-series / NVIDIA GPU | Whisper Base/Small |
-| OCR | GPU-accelerated | EasyOCR |
-
-### Optimization Tips
-
-1. **Use MLX on Apple Silicon**: 10-20x faster than CPU for VLM/audio
-2. **Enable caching**: Reduces redundant processing
-3. **Batch processing**: Use `convert_batch()` for multiple files
-4. **Choose appropriate models**: Smaller models (base, small) for faster processing
-5. **Adjust batch sizes**: Increase for better GPU utilization
 
 ## Known Limitations
 
@@ -346,7 +421,7 @@ uv run pytest --cov=src/vertector_data_ingestion
 - Embedded images in PDFs work correctly
 
 ### Audio
-- MLX Whisper requires Apple Silicon (M1/M2/M3)
+- MLX Whisper requires Apple Silicon (M1/M2/M3/M4)
 - Standard Whisper requires significant memory for large models
 - Word-level timestamps may not be available in all backends
 
@@ -357,7 +432,7 @@ uv run pytest --cov=src/vertector_data_ingestion
 **"MLX not available"**
 ```bash
 # Install MLX Whisper for Apple Silicon
-uv add mlx-whisper
+uv sync --extra mlx
 ```
 
 **"CUDA out of memory"**
@@ -375,15 +450,49 @@ config.ocr.engine = OcrEngine.TESSERACT
 config.ocr.confidence_threshold = 0.3
 ```
 
+For more troubleshooting help, see [Installation Guide - Troubleshooting](docs/installation.md#troubleshooting).
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/vertector/vertector-data-ingestion.git
+cd vertector-data-ingestion
+
+# Install with development dependencies
+uv sync --extra dev
+
+# Install pre-commit hooks
+pre-commit install
+
+# Run tests
+uv run pytest
+
+# Run linting
+uv run ruff check src/ tests/
+uv run ruff format src/ tests/
+
+# Run type checking
+uv run mypy src/
+```
 
 ## License
 
-[Your License Here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
 **Enoch Tetteh**
 Email: cutetetteh@gmail.com
+
+## Acknowledgments
+
+Built on top of:
+- [IBM Docling](https://github.com/DS4SD/docling) - Document understanding
+- [OpenAI Whisper](https://github.com/openai/whisper) - Audio transcription
+- [MLX](https://github.com/ml-explore/mlx) - Apple Silicon acceleration
+- [ChromaDB](https://www.trychroma.com/) - Vector database
