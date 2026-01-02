@@ -16,7 +16,7 @@ def requires_left_padding(model_name: str) -> bool:
         True if the model requires left padding
 
     Examples:
-        >>> requires_left_padding("Qwen/Qwen3-Embedding-4B")
+        >>> requires_left_padding("Qwen/Qwen3-Embedding-0.6B")
         True
         >>> requires_left_padding("nvidia/llama-embed-nemotron-8b")
         True
@@ -46,7 +46,7 @@ def get_padding_side(model_name: str) -> str:
         "left" for models that require it, "right" for others
 
     Examples:
-        >>> get_padding_side("Qwen/Qwen3-Embedding-4B")
+        >>> get_padding_side("Qwen/Qwen3-Embedding-0.6B")
         'left'
         >>> get_padding_side("nvidia/llama-embed-nemotron-8b")
         'left'
@@ -72,7 +72,7 @@ def get_embedding_dimension(model_name: str) -> int | None:
         Embedding dimension if found, None otherwise
 
     Examples:
-        >>> get_embedding_dimension("Qwen/Qwen3-Embedding-4B")
+        >>> get_embedding_dimension("Qwen/Qwen3-Embedding-0.6B")
         2560
         >>> get_embedding_dimension("nvidia/llama-embed-nemotron-8b")
         4096

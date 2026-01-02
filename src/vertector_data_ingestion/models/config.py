@@ -140,7 +140,7 @@ class ChunkingConfig(BaseSettings):
 
     Recommended models:
         - Qwen/Qwen3-Embedding-0.6B (1024 dims, 32K context, left padding)
-        - Qwen/Qwen3-Embedding-4B (2560 dims, 32K context, left padding)
+        - Qwen/Qwen3-Embedding-0.6B (2560 dims, 32K context, left padding)
         - Qwen/Qwen3-Embedding-8B (4096 dims, 32K context, left padding)
         - nvidia/llama-embed-nemotron-8b (4096 dims, left padding)
         - sentence-transformers/all-MiniLM-L6-v2 (384 dims, fast)
@@ -151,11 +151,11 @@ class ChunkingConfig(BaseSettings):
 
     size: int = Field(default=2048, alias="chunk_size")
     tokenizer: str = Field(
-        default="Qwen/Qwen3-Embedding-4B",
+        default="Qwen/Qwen3-Embedding-0.6B",
         description="Hugging Face tokenizer model (auto-detects padding side)",
     )
     merge_peers: bool = True
-    max_tokens: int = 2048  # Default for compatibility, Qwen3-Embedding-4B supports 32,768
+    max_tokens: int = 2048  # Default for compatibility, Qwen3-Embedding-0.6B supports 32,768
 
 
 class VectorStoreConfig(BaseSettings):
@@ -166,7 +166,7 @@ class VectorStoreConfig(BaseSettings):
 
     Recommended embedding models:
         - Qwen/Qwen3-Embedding-0.6B (1024 dims, 32K context, left padding)
-        - Qwen/Qwen3-Embedding-4B (2560 dims, 32K context, left padding)
+        - Qwen/Qwen3-Embedding-0.6B (2560 dims, 32K context, left padding)
         - Qwen/Qwen3-Embedding-8B (4096 dims, 32K context, left padding)
         - nvidia/llama-embed-nemotron-8b (4096 dims, left padding)
         - sentence-transformers/all-MiniLM-L6-v2 (384 dims, fast)
@@ -177,7 +177,7 @@ class VectorStoreConfig(BaseSettings):
 
     vector_store: VectorStoreType = VectorStoreType.CHROMA
     embedding_model: str = Field(
-        default="Qwen/Qwen3-Embedding-4B",
+        default="Qwen/Qwen3-Embedding-0.6B",
         description="Hugging Face embedding model for vector encoding",
     )
     chroma_persist_dir: Path = Field(default_factory=lambda: Path("./chroma_db"))

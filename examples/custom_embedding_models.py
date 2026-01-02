@@ -20,15 +20,15 @@ from vertector_data_ingestion.models.config import ChunkingConfig, VectorStoreCo
 
 # Example 1: Using default Qwen models (high quality, large context)
 def example_qwen_default():
-    """Default configuration with Qwen3-Embedding-4B."""
+    """Default configuration with Qwen3-Embedding-0.6B."""
     print("\n=== Example 1: Default Qwen3 Model ===")
 
-    # Default config uses Qwen/Qwen3-Embedding-4B for both chunking and embeddings
+    # Default config uses Qwen/Qwen3-Embedding-0.6B for both chunking and embeddings
     chunker = HybridChunker()  # Auto-detects left padding for Qwen
     vector_store = ChromaAdapter(collection_name="qwen_default")
 
     print(f"Tokenizer: {chunker.config.tokenizer}")
-    print(f"Embedding model: Qwen/Qwen3-Embedding-4B")
+    print(f"Embedding model: Qwen/Qwen3-Embedding-0.6B")
     print(f"Padding side: left (auto-detected)")
 
 
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("Model Selection Guide:")
     print("=" * 60)
-    print("\n1. **Qwen/Qwen3-Embedding-4B** (default)")
+    print("\n1. **Qwen/Qwen3-Embedding-0.6B** (default)")
     print("   - High quality embeddings")
     print("   - 32,768 token context window")
     print("   - Requires left padding (auto-detected)")

@@ -9,7 +9,7 @@ The system supports any Hugging Face compatible embedding model and automaticall
 ```python
 from vertector_data_ingestion import HybridChunker, ChromaAdapter
 
-# Uses Qwen/Qwen3-Embedding-4B by default
+# Uses Qwen/Qwen3-Embedding-0.6B by default
 chunker = HybridChunker()
 vector_store = ChromaAdapter(collection_name="my_collection")
 ```
@@ -61,7 +61,7 @@ This happens automatically based on the model name, so you don't need to worry a
 
 ### High Quality (Best Accuracy)
 
-**Qwen/Qwen3-Embedding-4B** (default)
+**Qwen/Qwen3-Embedding-0.6B** (default)
 - Context: 32,768 tokens
 - Size: ~4GB
 - Best for: Maximum quality, long documents
@@ -69,7 +69,7 @@ This happens automatically based on the model name, so you don't need to worry a
 
 ```python
 chunk_config = ChunkingConfig(
-    tokenizer="Qwen/Qwen3-Embedding-4B",
+    tokenizer="Qwen/Qwen3-Embedding-0.6B",
     max_tokens=8192,  # Can go up to 32,768
 )
 ```

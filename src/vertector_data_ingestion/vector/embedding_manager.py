@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 class EmbeddingManager:
     """Manager for embedding models."""
 
-    def __init__(self, model_name: str = "Qwen/Qwen3-Embedding-4B"):
+    def __init__(self, model_name: str = "Qwen/Qwen3-Embedding-0.6B"):
         """
         Initialize embedding manager.
 

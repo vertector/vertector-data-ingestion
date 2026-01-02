@@ -16,7 +16,7 @@ class ChromaAdapter(VectorStoreAdapter):
         self,
         collection_name: str = "documents",
         persist_directory: Path | None = None,
-        embedding_model: str = "Qwen/Qwen3-Embedding-4B",
+        embedding_model: str = "Qwen/Qwen3-Embedding-0.6B",
     ):
         """
         Initialize ChromaDB adapter.

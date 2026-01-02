@@ -49,7 +49,7 @@ Vertector is a comprehensive data ingestion system built on IBM's Docling framew
 - **Hierarchical Chunking**: Token-aware chunking with section hierarchy and metadata
 - **Multiple Export Formats**: Markdown, JSON, DocTags
 - **Vector Store Integration**: ChromaDB, Pinecone, Qdrant, OpenSearch
-- **Embedding Support**: Qwen3-Embedding-4B (32K context window)
+- **Embedding Support**: Qwen3-Embedding-0.6B (32K context window)
 
 ### 🔌 MCP Server
 
@@ -298,7 +298,7 @@ export VERTECTOR_OCR_USE_GPU=true
 
 # Vector Store Configuration
 export VERTECTOR_VECTOR_STORE=chroma
-export VERTECTOR_EMBEDDING_MODEL=Qwen/Qwen3-Embedding-4B
+export VERTECTOR_EMBEDDING_MODEL=Qwen/Qwen3-Embedding-0.6B
 ```
 
 ### Programmatic Configuration
