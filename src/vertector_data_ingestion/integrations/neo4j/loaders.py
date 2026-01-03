@@ -186,7 +186,7 @@ class VertectorAudioLoader(DataLoader):
             PdfDocument with transcribed text and metadata
 
         Raises:
-            FileNotFoundError: If the audio file does not exist
+            FileNotFoundError: If the audio file does not exist or ffmpeg is not found
             ValueError: If the audio format is not supported
 
         Example:
@@ -196,7 +196,18 @@ class VertectorAudioLoader(DataLoader):
             '# Audio Transcription: interview.mp3\\n**Duration:** 45.2s\\n...'
         """
         # Transcribe audio
-        result = self.transcriber.transcribe(filepath)
+        try:
+            result = self.transcriber.transcribe(filepath)
+        except FileNotFoundError as e:
+            if "ffmpeg" in str(e):
+                msg = (
+                    "ffmpeg is required for audio processing but was not found. "
+                    "Install it with: brew install ffmpeg (macOS) or apt-get install ffmpeg (Linux). "
+                    "If ffmpeg is installed, ensure it's in your PATH. "
+                    "For Jupyter notebooks, restart the kernel after installing ffmpeg."
+                )
+                raise FileNotFoundError(msg) from e
+            raise
 
         # Store for splitter access (enables audio segment chunking)
         self.last_transcription_result = result
