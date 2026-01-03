@@ -187,6 +187,10 @@ class VertectorTextSplitter(TextSplitter):
 
         result = self.loader.last_transcription_result
 
+        # Get audio filename from loader metadata
+        audio_filename = self.loader.last_metadata.get("filename", "audio")
+        document_id = Path(audio_filename).stem  # Use filename without extension as document_id
+
         # Create DocumentChunk objects from segments (mirroring notebook 04)
         doc_chunks = []
         for i, segment in enumerate(result.segments):
@@ -195,10 +199,11 @@ class VertectorTextSplitter(TextSplitter):
 
             # Create DocumentChunk with audio metadata
             chunk = DocumentChunk(
-                chunk_id=f"audio_{i}",
+                chunk_id=f"{document_id}_{i}",
                 text=segment.text,
                 token_count=len(tokens),
-                source_path=Path("audio"),  # Will be overridden by metadata
+                source_path=Path(audio_filename),
+                document_id=document_id,
                 chunk_index=i,
                 metadata={
                     "modality": "audio",

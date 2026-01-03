@@ -320,3 +320,81 @@ class TestMultimodalIntegration:
         assert "modality" in audio_chunks.chunks[0].metadata
 
         print(f"\n✓ Multimodal pipeline verified")
+
+    async def test_multimodal_loader_property_delegation(self, audio_file):
+        """Test that MultimodalLoader properly delegates properties to sub-loaders.
+
+        This test verifies the fix for the bug where VertectorTextSplitter
+        couldn't access last_transcription_result through MultimodalLoader.
+        The properties should be accessible directly on the MultimodalLoader
+        instance, not just on the internal sub-loaders.
+        """
+        loader = MultimodalLoader()
+        splitter = VertectorTextSplitter(loader=loader, chunk_size=512)
+
+        # Load audio through MultimodalLoader
+        audio_result = await loader.run(audio_file)
+
+        # Verify properties are accessible through MultimodalLoader (not just audio_loader)
+        assert loader.last_transcription_result is not None
+        assert loader.last_transcription_result.duration > 0
+        assert loader.last_transcription_result.language == "en"
+        assert len(loader.last_transcription_result.segments) > 0
+
+        # Verify splitter can access the properties through loader
+        audio_chunks = await splitter.run(audio_result.text)
+        assert len(audio_chunks.chunks) > 0
+
+        # Verify chunks have audio metadata
+        chunk = audio_chunks.chunks[0]
+        assert "start_time" in chunk.metadata
+        assert "end_time" in chunk.metadata
+        assert "duration" in chunk.metadata
+        assert "modality" in chunk.metadata
+        assert chunk.metadata["modality"] == "audio"
+
+        print(f"\n✓ MultimodalLoader property delegation works")
+        print(f"  Loaded audio: {loader.last_transcription_result.duration:.2f}s")
+        print(f"  Created {len(audio_chunks.chunks)} chunks through delegated properties")
+
+    async def test_multimodal_state_isolation(self, audio_file, pdf_file):
+        """Test that loading one modality clears the state of the other.
+
+        Regression test for bug where loading document then audio would cause
+        audio splitting to return document chunks instead of audio chunks.
+        """
+        loader = MultimodalLoader()
+        splitter = VertectorTextSplitter(loader=loader, chunk_size=512)
+
+        # Load document first
+        doc_result = await loader.run(pdf_file)
+        assert loader.last_document is not None
+        assert loader.last_transcription_result is None
+
+        # Chunk document
+        doc_chunks = await splitter.run(doc_result.text)
+        doc_chunk_text = doc_chunks.chunks[0].text
+
+        # Now load audio - this should CLEAR document state
+        audio_result = await loader.run(audio_file)
+        assert loader.last_document is None  # Document state cleared
+        assert loader.last_transcription_result is not None  # Audio state set
+
+        # Chunk audio - should get AUDIO chunks, not document chunks
+        audio_chunks = await splitter.run(audio_result.text)
+        audio_chunk_text = audio_chunks.chunks[0].text
+
+        # Verify audio chunks are different from document chunks
+        assert audio_chunk_text != doc_chunk_text, (
+            "Audio chunks should not equal document chunks after state transition"
+        )
+
+        # Verify metadata is correct
+        assert "start_time" in audio_chunks.chunks[0].metadata
+        assert "modality" in audio_chunks.chunks[0].metadata
+        assert audio_chunks.chunks[0].metadata["modality"] == "audio"
+
+        print(f"\n✓ Multimodal state isolation verified")
+        print(f"  Document chunks: {len(doc_chunks.chunks)}")
+        print(f"  Audio chunks: {len(audio_chunks.chunks)}")
+        print(f"  State properly isolated between modalities")

@@ -315,15 +315,23 @@ class MultimodalLoader(DataLoader):
         return self.doc_loader.last_document
 
     @property
+    def last_transcription_result(self):
+        """Access the last transcription result from audio_loader.
+
+        Returns:
+            TranscriptionResult if audio was processed, None otherwise
+        """
+        return self.audio_loader.last_transcription_result
+
+    @property
     def last_metadata(self) -> dict[str, Any]:
         """Get metadata from the last used loader.
 
         Returns:
             Metadata dictionary from the most recently used loader
         """
-        # Return metadata from whichever loader was used last
-        # Check audio_loader first as it has 'modality' key
-        if self.audio_loader.last_metadata.get("modality") == "audio":
+        # Check which loader was used most recently by checking their states
+        if self.audio_loader.last_transcription_result is not None:
             return self.audio_loader.last_metadata
         return self.doc_loader.last_metadata
 
@@ -351,5 +359,12 @@ class MultimodalLoader(DataLoader):
         """
         # Detect file type by extension and delegate to specialized loader
         if filepath.suffix.lower() in self.AUDIO_EXTENSIONS:
+            # Clear document state before loading audio
+            self.doc_loader.last_document = None
+            self.doc_loader.last_metadata = {}
             return await self.audio_loader.run(filepath, metadata)
+
+        # Clear audio state before loading document
+        self.audio_loader.last_transcription_result = None
+        self.audio_loader.last_metadata = {}
         return await self.doc_loader.run(filepath, metadata)
