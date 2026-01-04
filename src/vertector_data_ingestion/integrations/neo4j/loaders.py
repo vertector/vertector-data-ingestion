@@ -357,6 +357,9 @@ class MultimodalLoader(DataLoader):
             >>> doc = await loader.run(Path("report.pdf"))  # Uses doc_loader
             >>> audio = await loader.run(Path("call.mp3"))  # Uses audio_loader
         """
+        # Convert to Path if needed
+        filepath = Path(filepath) if isinstance(filepath, str) else filepath
+
         # Detect file type by extension and delegate to specialized loader
         if filepath.suffix.lower() in self.AUDIO_EXTENSIONS:
             # Clear document state before loading audio
