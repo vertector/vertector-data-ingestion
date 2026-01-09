@@ -331,9 +331,10 @@ class KnowledgeGraphBuilder:
         relationship_types: list[RelationshipType],
         patterns: list[tuple[str, str, str]] | None = None,
         lexical_graph_config: LexicalGraphConfig | None = None,  # Optional with smart default
+        prompt_template: str | None = None,  # Custom extraction prompt template
     ) -> None:
         """Define knowledge graph schema using Neo4j GraphRAG API.
-        
+
         Args:
             node_types: List of NodeType objects defining entity types
             relationship_types: List of RelationshipType objects
@@ -341,11 +342,15 @@ class KnowledgeGraphBuilder:
             lexical_graph_config: Optional LexicalGraphConfig. If None, uses default
                                 (Document and Chunk labels). Only pass this if you need
                                 custom lexical graph node labels.
-        
+            prompt_template: Optional custom prompt template for entity/relationship extraction.
+                           Template can use {text} and {schema} placeholders.
+                           If None, uses default ERExtractionTemplate.
+
         Example:
             >>> from neo4j_graphrag.experimental.components.schema import (
             ...     NodeType, RelationshipType, PropertyType
             ... )
+            >>> # Example 1: Basic usage with default prompt
             >>> builder.define_schema(
             ...     node_types=[
             ...         NodeType(
@@ -358,6 +363,21 @@ class KnowledgeGraphBuilder:
             ...     ],
             ...     relationship_types=[RelationshipType(label="KNOWS")],
             ...     patterns=[("Person", "KNOWS", "Person")]
+            ... )
+            >>>
+            >>> # Example 2: With custom prompt template
+            >>> custom_prompt = '''Extract entities from the text.
+            ...
+            ... TEXT:
+            ... {text}
+            ...
+            ... SCHEMA:
+            ... {schema}
+            ... '''
+            >>> builder.define_schema(
+            ...     node_types=[NodeType(label="Person")],
+            ...     relationship_types=[RelationshipType(label="KNOWS")],
+            ...     prompt_template=custom_prompt
             ... )
             >>> # Constraints created automatically for Person + Document + Chunk
         """
@@ -394,20 +414,28 @@ class KnowledgeGraphBuilder:
         # MergeKGWriter uses pure Cypher MERGE operations that work with constraints
         kg_writer = MergeKGWriter(driver=self.driver)
 
+        # Build SimpleKGPipeline parameters
+        pipeline_params = {
+            "llm": llm,
+            "driver": self.driver,
+            "embedder": embedder,
+            "pdf_loader": self.loader,  # Custom MultimodalLoader
+            "text_splitter": self.splitter,  # Custom VertectorTextSplitter
+            "kg_writer": kg_writer,  # Custom MERGE-based writer (fixes APOC constraint bug)
+            "schema": schema_config,
+            "from_pdf": True,  # Use custom loader and splitter
+            "on_error": self.on_error,
+            "perform_entity_resolution": True,  # Entity resolution merges duplicates
+            "lexical_graph_config": lexical_graph_config,  # Use same config for consistency
+        }
+
+        # Add custom prompt template if provided
+        if prompt_template:
+            pipeline_params["prompt_template"] = prompt_template
+            logger.info("  Using custom prompt template for entity/relationship extraction")
+
         # Create SimpleKGPipeline with MergeKGWriter + constraints = complete idempotency
-        self.pipeline = SimpleKGPipeline(
-            llm=llm,
-            driver=self.driver,
-            embedder=embedder,
-            pdf_loader=self.loader,  # Custom MultimodalLoader
-            text_splitter=self.splitter,  # Custom VertectorTextSplitter
-            kg_writer=kg_writer,  # Custom MERGE-based writer (fixes APOC constraint bug)
-            schema=schema_config,
-            from_pdf=True,  # Use custom loader and splitter
-            on_error=self.on_error,
-            perform_entity_resolution=True,  # Entity resolution merges duplicates
-            lexical_graph_config=lexical_graph_config,  # Use same config for consistency
-        )
+        self.pipeline = SimpleKGPipeline(**pipeline_params)
         
         logger.success("✓ Schema + constraints defined, pipeline ready")
 
