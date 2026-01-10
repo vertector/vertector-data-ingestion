@@ -38,8 +38,7 @@ dev = [
     "mypy>=1.11.0",
 ]
 asr = [
-    "openai-whisper>=20250625",
-    "mlx-whisper>=0.4.3",
+    "openai-whisper>=20250625",  # Standard Whisper (works on all platforms)
 ]
 mlx = [
     "mlx>=0.30.1",
