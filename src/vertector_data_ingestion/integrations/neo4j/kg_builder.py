@@ -280,17 +280,18 @@ class KnowledgeGraphBuilder:
         logger.info(f"  Lexical graph: {doc_label}, {chunk_label}")
         
         with self.driver.session() as session:
-            # 1. Create constraints for entity nodes (unique by 'name' property)
+            # 1. Create constraints for entity nodes (unique by 'content_hash' property)
+            # This matches the MergeKGWriter's SHA256-based MERGE strategy
             for label in entity_labels:
                 try:
-                    constraint_name = f"{label.lower()}_name_unique"
+                    constraint_name = f"{label.lower()}_content_hash_unique"
                     query = f"""
                     CREATE CONSTRAINT {constraint_name} IF NOT EXISTS
                     FOR (n:{label})
-                    REQUIRE n.name IS UNIQUE
+                    REQUIRE n.content_hash IS UNIQUE
                     """
                     session.run(query)
-                    logger.debug(f"✓ Entity constraint: {label}.name IS UNIQUE")
+                    logger.debug(f"✓ Entity constraint: {label}.content_hash IS UNIQUE")
                 except Exception as e:
                     logger.debug(f"Constraint for {label} may already exist: {e}")
             
