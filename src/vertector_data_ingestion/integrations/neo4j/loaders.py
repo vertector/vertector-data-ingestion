@@ -98,7 +98,9 @@ class VertectorDataLoader(DataLoader):
             '# Document Title\\n\\nFirst paragraph...'
         """
         # Convert using Vertector's unified API
-        doc_wrapper = self.converter.convert(filepath)
+        doc_wrapper = self.converter.convert(
+            filepath, use_vlm=self.converter.config.vlm.preset_model is not None
+        )
 
         # Store for downstream access (enables rich chunking)
         self.last_document = doc_wrapper

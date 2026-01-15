@@ -190,7 +190,7 @@ from vertector_data_ingestion import (
 
 # Convert document
 converter = UniversalConverter()
-doc = converter.convert_single("research_paper.pdf")
+doc = converter.convert("research_paper.pdf")
 
 # Create chunks for RAG
 chunker = HybridChunker()
